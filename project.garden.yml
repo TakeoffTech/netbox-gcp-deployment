@@ -1,11 +1,12 @@
 kind: Project
 name: netbox
 variables:
-  # base_envname: ${slice((local.env.CI_REF_NAME_SLUG || replace(local.username, ".", "-")), '0', '11')}
+  base_envname: ${slice((local.env.CI_REF_NAME_SLUG || replace(local.username, ".", "-")), '0', '11')}
   google_project_id: sandbox-20210927-xadnp6
   google_compute_region: us-central1
 environments:
   - name: dev
+    defaultNamespace: user-${var.base_envname}
 providers:
   - name: terraform
     version: 1.0.5
@@ -16,7 +17,6 @@ providers:
       project_id: ${var.google_project_id}
       region: ${var.google_compute_region}
       gcloud_get_credentials: true
-      # namespace: ${providers.kubernetes.outputs.app-namespace}
   - name: kubernetes
     context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_id}
     environments:

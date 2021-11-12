@@ -3,41 +3,45 @@ type: helm
 name: netbox
 repo: https://charts.boo.tc
 chart: netbox
-# serviceResource:
-#   kind: StatefulSet
-#   name: couchdb-couchdb
+serviceResource:
+  kind: Deployment
+  name: netbox
+dependencies:
+  - netbox-app-infra
 values:
+  image:
+    tag: v3.0-1.4.1
   postgresql:
-    postgresqlPostgresPassword: postgrespassword123!
-    postgresqlPassword: netboxpass123!
+    enabled: false
+  externalDatabase:
+    host: localhost
+    port: 5432
+    database: ${providers.kubernetes.outputs.app-namespace}
+    username: ${providers.kubernetes.outputs.app-namespace}
+    existingSecretName: psql-netbox-user
+    existingSecretKey: postgresql-password
   persistence:
     storageClass: standard-rwo
   worker: 
     enabled: false
-  #   enabled: false
-  # externalDatabase:
-  #   host: localhost
-  #   port: 5432
-  #   database: netbox
-  #   username: netbox
-  #   password: ""
-  #   existingSecretName: ""
-  #   existingSecretKey: postgresql-password
-  # extraContainers:
-  # - name: cloud-sql-proxy
-  #   image: gcr.io/cloudsql-docker/gce-proxy:1.27
-  #   env:
-  #     - name: CONNECTION_NAME
-  #       valueFrom:
-  #         secretKeyRef:
-  #           name: cloudsql-instance
-  #           key: connection_name
-  #   command:
-  #     - "/cloud_sql_proxy"
-  #     - "-instances=$(CONNECTION_NAME)=tcp:5432"
-  #   securityContext:
-  #     runAsNonRoot: true
-  #   resources:
-  #     requests:
-  #       memory: "256Mi"
-  #       cpu:    "200m"
+  serviceAccount:
+    create: false
+    name: ${providers.kubernetes.outputs.app-namespace}
+  extraContainers:
+  - name: cloud-sql-proxy
+    image: gcr.io/cloudsql-docker/gce-proxy:1.27.0
+    env:
+      - name: CONNECTION_NAME
+        valueFrom:
+          secretKeyRef:
+            name: cloudsql-instance
+            key: connection_name
+    command:
+      - "/cloud_sql_proxy"
+      - "-instances=$(CONNECTION_NAME)=tcp:5432"
+    securityContext:
+      runAsNonRoot: true
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu:    "200m"
