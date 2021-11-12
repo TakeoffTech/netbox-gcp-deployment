@@ -1,0 +1,43 @@
+kind: Module
+type: helm
+name: netbox
+repo: https://charts.boo.tc
+chart: netbox
+# serviceResource:
+#   kind: StatefulSet
+#   name: couchdb-couchdb
+values:
+  postgresql:
+    postgresqlPostgresPassword: postgrespassword123!
+    postgresqlPassword: netboxpass123!
+  persistence:
+    storageClass: standard-rwo
+  worker: 
+    enabled: false
+  #   enabled: false
+  # externalDatabase:
+  #   host: localhost
+  #   port: 5432
+  #   database: netbox
+  #   username: netbox
+  #   password: ""
+  #   existingSecretName: ""
+  #   existingSecretKey: postgresql-password
+  # extraContainers:
+  # - name: cloud-sql-proxy
+  #   image: gcr.io/cloudsql-docker/gce-proxy:1.27
+  #   env:
+  #     - name: CONNECTION_NAME
+  #       valueFrom:
+  #         secretKeyRef:
+  #           name: cloudsql-instance
+  #           key: connection_name
+  #   command:
+  #     - "/cloud_sql_proxy"
+  #     - "-instances=$(CONNECTION_NAME)=tcp:5432"
+  #   securityContext:
+  #     runAsNonRoot: true
+  #   resources:
+  #     requests:
+  #       memory: "256Mi"
+  #       cpu:    "200m"

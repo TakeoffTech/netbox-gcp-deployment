@@ -1,0 +1,10 @@
+kind: Module
+type: terraform
+name: netbox-app-infra
+variables:
+  project_id: ${var.google_project_id}
+  region: ${var.google_compute_region}
+  namespace: ${providers.kubernetes.outputs.app-namespace}
+  cloudsql_instance_name: ${providers.terraform.outputs.cloudsql_instance_name}
+allowDestroy: true
+autoApply: true
