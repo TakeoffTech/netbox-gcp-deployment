@@ -1,0 +1,12 @@
+{{- if and .Values.ingress.tls.enabled .Values.ingress.tls.managedCertificate -}}
+{{- $fullName := include "netbox-ingress.fullname" . -}}
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: {{ $fullName }}
+spec:
+  domains:
+    {{- range .Values.ingress.tls.domains }}
+    - {{ . }}
+    {{- end }}
+{{- end }}

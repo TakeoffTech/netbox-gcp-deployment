@@ -1,0 +1,11 @@
+kind: Module
+type: helm
+name: netbox-ingress
+dependencies:
+  - netbox-app-infra
+values:
+  ingress:
+    globalStaticIpName: ${providers.kubernetes.outputs.app-namespace}
+    tls:
+      domains:
+        - ${providers.kubernetes.outputs.app-namespace}.takeofftech.org

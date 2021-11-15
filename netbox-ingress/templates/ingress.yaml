@@ -1,0 +1,37 @@
+{{- if .Values.ingress.enabled -}}
+{{- $fullName := include "netbox-ingress.fullname" . -}}
+{{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
+  {{- end }}
+{{- end }}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1beta1
+{{- else -}}
+apiVersion: extensions/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: {{ $fullName }}
+  labels:
+    {{- include "netbox-ingress.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.ingress.globalStaticIpName }}
+    kubernetes.io/ingress.global-static-ip-name: {{ .Values.ingress.globalStaticIpName }}
+    {{- end }}
+    {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.managedCertificate }}
+    networking.gke.io/managed-certificates: {{ $fullName }}
+    {{- end }}
+    kubernetes.io/ingress.class: "gce"
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  defaultBackend:
+    service:
+      name: {{ .Values.ingress.serviceName }}
+      port:
+        number: {{ .Values.ingress.servicePort }}
+{{- end }}
