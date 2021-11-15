@@ -3,6 +3,7 @@ type: helm
 name: netbox
 repo: https://charts.boo.tc
 chart: netbox
+timeout: 600
 serviceResource:
   kind: Deployment
   name: netbox
@@ -20,8 +21,13 @@ values:
     username: ${providers.kubernetes.outputs.app-namespace}
     existingSecretName: psql-netbox-user
     existingSecretKey: postgresql-password
+  storageBackend: storages.backends.gcloud.GoogleCloudStorage
+  storageConfig:
+    GS_BUCKET_NAME: ${runtime.services.netbox-app-infra.outputs.bucket.name}
+    GS_DEFAULT_ACL: publicRead
+    GS_QUERYSTRING_AUTH: true
   persistence:
-    storageClass: standard-rwo
+    enabled: false
   worker: 
     enabled: false
   serviceAccount:

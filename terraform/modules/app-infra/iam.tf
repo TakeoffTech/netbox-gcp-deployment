@@ -3,5 +3,5 @@ module "my-app-workload-identity" {
   name       = local.name
   namespace  = var.namespace
   project_id = var.project_id
-  roles      = ["roles/storage.admin", "roles/cloudsql.client"]
+  roles      = ["roles/cloudsql.client", "roles/iam.serviceAccountTokenCreator"]
 }

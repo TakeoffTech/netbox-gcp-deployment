@@ -13,3 +13,30 @@ variable "gcloud_get_credentials" {
   type = bool
   default = false
 }
+
+variable "google_apis" {
+  type = list(string)
+  default = [
+    // General
+    "iam.googleapis.com",
+    "iamcredentials.googleapis.com",
+
+    // DNS
+    //"dns.googleapis.com",
+
+    // GKE + compute
+    "compute.googleapis.com",
+    "container.googleapis.com",
+
+    // artifact registry
+    "artifactregistry.googleapis.com",
+
+    // storage
+    "storage-component.googleapis.com",
+    "storage-api.googleapis.com",
+
+    // Cloud SQL
+    "sqladmin.googleapis.com"
+
+  ]
+}

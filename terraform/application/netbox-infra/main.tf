@@ -2,6 +2,15 @@ locals {
   cluster_name = "gke"
 }
 
+##### make sure APIs are enabled ######
+resource "google_project_service" "default" {
+  for_each           = toset(var.google_apis)
+  provider           = google
+  service            = each.value
+  disable_on_destroy = false
+}
+
+##### Deploy GKE autopilot cluster #####
 module "gke_autopilot" {
   source = "../../modules/gke_autopilot"
   
@@ -30,6 +39,15 @@ module "postgresql-db" {
     authorized_networks = []
   }
 
+}
+
+module "app-infra" {
+  count = var.gcloud_get_credentials ? 0 : 1
+  source = "../../modules/app-infra"
+
+  project_id = var.project_id
+  region  = var.region
+  cloudsql_instance_name = module.postgresql-db.instance_name
 }
 
 resource "null_resource" "kube_context" {
