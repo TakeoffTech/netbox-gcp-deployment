@@ -11,7 +11,7 @@ dependencies:
   - netbox-app-infra
 values:
   image:
-    tag: v3.0-1.4.1
+    tag: v3.1-1.5.1
   postgresql:
     enabled: false
   service:
@@ -30,8 +30,6 @@ values:
     GS_DEFAULT_ACL: publicRead
     GS_QUERYSTRING_AUTH: true
   persistence:
-    enabled: false
-  worker: 
     enabled: false
   serviceAccount:
     create: false
@@ -54,3 +52,19 @@ values:
       requests:
         memory: "256Mi"
         cpu:    "200m"
+  housekeeping:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+  redis:
+    enabled: false
+  tasksRedis:
+    host: ${runtime.services.netbox-app-infra.outputs.redis_host}
+    port: 6379
+  cachingRedis:
+    host: ${runtime.services.netbox-app-infra.outputs.redis_host}
+    port: 6379

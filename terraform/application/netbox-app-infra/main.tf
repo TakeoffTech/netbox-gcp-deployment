@@ -1,4 +1,4 @@
-module "app-infa" {
+module "app-infra" {
   source = "../../modules/app-infra"
 
   project_id = var.project_id
