@@ -12,6 +12,9 @@ dependencies:
 values:
   image:
     tag: v3.1-1.5.1
+  autoscaling:
+    enabled: true
+    maxReplicas: 10
   postgresql:
     enabled: false
   service:
@@ -34,6 +37,9 @@ values:
   serviceAccount:
     create: false
     name: ${providers.kubernetes.outputs.app-namespace}
+  worker:
+    autoscaling:
+      enabled: true
   extraContainers:
   - name: cloud-sql-proxy
     image: gcr.io/cloudsql-docker/gce-proxy:1.27.0
