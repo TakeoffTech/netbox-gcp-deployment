@@ -10,6 +10,20 @@ resource "google_project_service" "default" {
   disable_on_destroy = false
 }
 
+##### Bucket to store terraform state
+resource "google_storage_bucket" "project_bucket" {
+  name                        = "${var.project_id}-state"
+  project                     = var.project_id
+  location                    = var.bucket_location
+  labels                      = var.bucket_labels
+  force_destroy               = var.bucket_force_destroy
+  uniform_bucket_level_access = var.bucket_ula
+
+  versioning {
+    enabled = var.bucket_versioning
+  }
+}
+
 ##### Deploy GKE autopilot cluster #####
 module "gke_autopilot" {
   source = "../../modules/gke_autopilot"
@@ -31,6 +45,7 @@ module "postgresql-db" {
   tier                 = "db-f1-micro"
 
   deletion_protection = false
+  create_timeout      = "30m"
 
   ip_configuration = {
     ipv4_enabled        = true

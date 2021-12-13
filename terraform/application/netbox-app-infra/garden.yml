@@ -8,3 +8,6 @@ variables:
   cloudsql_instance_name: ${providers.terraform.outputs.cloudsql_instance_name}
 allowDestroy: true
 autoApply: true
+generateFiles:
+  - sourcePath: ../../templates/backend.tf.tmpl
+    targetPath: backend.tf

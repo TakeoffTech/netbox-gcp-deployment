@@ -1,0 +1,6 @@
+terraform {
+  backend "gcs" {
+    bucket  = "${providers.terraform.outputs.project_bucket_name}"
+    prefix  = "${this.name}/state"
+  }
+}

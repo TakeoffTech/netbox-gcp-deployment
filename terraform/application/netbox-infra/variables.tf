@@ -36,7 +36,39 @@ variable "google_apis" {
     "storage-api.googleapis.com",
 
     // Cloud SQL
-    "sqladmin.googleapis.com"
+    "sqladmin.googleapis.com",
 
+    //redis
+    "redis.googleapis.com"
   ]
+}
+
+variable "bucket_location" {
+  description = "The location for a GCS bucket to create (optional)"
+  type        = string
+  default     = "US"
+}
+
+variable "bucket_versioning" {
+  description = "Enable versioning for a GCS bucket to create (optional)"
+  type        = bool
+  default     = true
+}
+
+variable "bucket_labels" {
+  description = " A map of key/value label pairs to assign to the bucket (optional)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "bucket_force_destroy" {
+  description = "Force the deletion of all objects within the GCS bucket when deleting the bucket (optional)"
+  type        = bool
+  default     = false
+}
+
+variable "bucket_ula" {
+  description = "Enable Uniform Bucket Level Access"
+  type        = bool
+  default     = true
 }

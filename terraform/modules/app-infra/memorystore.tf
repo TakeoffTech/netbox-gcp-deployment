@@ -8,7 +8,6 @@ module "memorystore" {
 
   name    = "netbox-memorystore"
   project = var.project_id
-  enable_apis = true
 
   transit_encryption_mode = "DISABLED"
   authorized_network      = data.google_compute_network.redis-network.id

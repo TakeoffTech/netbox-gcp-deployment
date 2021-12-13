@@ -1,0 +1,12 @@
+kind: Module
+type: exec
+name: netbox-infra
+generateFiles:
+  - sourcePath: ../../templates/backend.tf.tmpl
+    targetPath: backend.tf
+local: true
+services:
+  - name: migrate-state
+    deployCommand: ["garden", "tools", "terraform.terraform-1-0-5", "--", "init", "-migrate-state", "-force-copy"]
+    statusCommand: ["garden", "tools", "terraform.terraform-1-0-5", "--", "init", "-input=false"]
+    #cleanupCommand: ["rm", "backend.tf"]
