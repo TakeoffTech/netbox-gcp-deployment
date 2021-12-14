@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 terraform=$(garden tools terraform.terraform-1-0-5 --get-path)
 terraform_bucket_target="google_storage_bucket.project_bucket"
