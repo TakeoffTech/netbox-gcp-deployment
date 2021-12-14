@@ -137,7 +137,7 @@ https://cloud.google.com/sdk/docs/install
   https://cloud.google.com/sdk/docs/initializing
 
 #### Create a GCP project
-* Follow the directions here to create a sandbox project:
+* Follow the directions here to create a gcp project:
   [Creating a project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project)
 
 ### Installation
