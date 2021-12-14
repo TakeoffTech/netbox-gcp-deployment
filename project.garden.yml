@@ -4,13 +4,18 @@ variables:
   base_envname: ${slice((local.env.CI_REF_NAME_SLUG || replace(local.username, ".", "-")), '0', '11')}
   google_project_id: ${local.env.GOOGLE_PROJECT || "replace-me-with-your-project-id"}
   google_compute_region: us-central1
+  terraform_root: "./terraform/application/netbox-infra"
 environments:
   - name: dev
     defaultNamespace: user-${var.base_envname}
 providers:
+  - name: exec
+    initScript: "${local.projectPath}/bootstrap.sh ${var.google_project_id} ${var.terraform_root}"
   - name: terraform
+    dependencies: 
+      - exec
     version: 1.0.5
-    initRoot: "./terraform/application/netbox-infra"
+    initRoot: "${var.terraform_root}"
     autoApply: true
     allowDestroy: false
     variables:
