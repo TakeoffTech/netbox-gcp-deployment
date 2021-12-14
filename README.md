@@ -108,44 +108,79 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-#### Install garden using homebrew
-* Garden
+#### Install garden
+* Homebrew on Mac
   ```sh
   brew tap garden-io/garden
   brew install garden-cli
   ```
-#### Create a GCP project 
 
+* Installation instructions:
+  https://docs.garden.io/getting-started/1-installation
+#### Install and init Google Cloud SDK 
+* Homebrew on Mac
+  ```sh
+  brew install --cask google-cloud-sdk
+  ```
+* For other Operating system follow the directions here:
+https://cloud.google.com/sdk/docs/install
+
+* Setting up the Google Cloud SDK
+  ```sh
+  gcloud init
+  ```
+* Make sure to login with your account and set the default login
+  ```sh
+  gcloud auth login
+  gcloud auth application-default login
+  ```
+  https://cloud.google.com/sdk/docs/initializing
+
+#### Create a GCP project
+* Follow the directions here to create a sandbox project:
+  [Creating a project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project)
 
 ### Installation
 
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
+1. Clone the repo
    ```sh
    git clone https://github.com/TakeoffTech/netbox-gcp-deployment.git
    ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Enter your API in `config.js`
-   ```js
-   const API_KEY = 'ENTER YOUR API';
-   ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+The current setup allows you to deploy netbox to empty gcp project.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+### Setting your environment variables
+* Your google project ID
+  ```sh
+  export GOOGLE_PROJECT=<project_id>
+  ```
+* We default everything to the `us-central1` region. You can override this with the `GOOGLE_REGION` environment variable. You can find the list of GCP regions here: https://cloud.google.com/compute/docs/regions-zones#available
+  ```sh
+  export GOOGLE_REGION=regionID
+  ```
+#### Deploying
+* Run garden deploy
+  ```sh
+  garden deploy
+  ```
+
+#### Cleanup
+* Delete the environment
+  ```sh
+  garden delete env
+  ```
+* Currently we do not destroy the GKE cluster when deleting the environment, run this to cleanup the project and GKE cluster
+  ```sh
+  garden plugins terraform destroy-root
+  ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- ROADMAP -->
