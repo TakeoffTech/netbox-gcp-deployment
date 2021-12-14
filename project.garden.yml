@@ -22,7 +22,6 @@ providers:
       project_id: ${var.google_project_id}
       region: ${var.google_compute_region}
       gcloud_get_credentials: true
-      bucket_force_destroy: true
   - name: kubernetes
     context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_id}
     environments:
