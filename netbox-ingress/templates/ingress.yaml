@@ -24,6 +24,9 @@ metadata:
     {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.managedCertificate }}
     networking.gke.io/managed-certificates: {{ $fullName }}
     {{- end }}
+    {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.httpRedirect }}
+    networking.gke.io/v1beta1.FrontendConfig: {{ $fullName }}
+    {{- end }}
     kubernetes.io/ingress.class: "gce"
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
@@ -34,4 +37,14 @@ spec:
       name: {{ .Values.ingress.serviceName }}
       port:
         number: {{ .Values.ingress.servicePort }}
+  # rules:
+  # - http:
+  #     paths:
+  #     - path: /*
+  #       pathType: ImplementationSpecific
+  #       backend:
+  #         service:
+  #           name: {{ .Values.ingress.serviceName }}
+  #           port:
+  #             number: {{ .Values.ingress.servicePort }}
 {{- end }}
