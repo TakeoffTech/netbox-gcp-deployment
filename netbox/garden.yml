@@ -1,25 +1,43 @@
 kind: Module
+type: kubernetes
+name: nginx-vouch-config
+description: nginx and vouch config
+files:
+  - nginx-config-cm.yaml
+---
+kind: Module
 type: helm
 name: netbox
 repo: https://charts.boo.tc
 chart: netbox
+version: 4.0.1
 timeout: 600
 serviceResource:
   kind: Deployment
   name: netbox
 dependencies:
   - netbox-app-infra
+  - nginx-vouch-config
 values:
+  debug: true
+  internalIPs: ['0.0.0.0']
   image:
     tag: v3.1-1.5.1
   autoscaling:
     enabled: true
     maxReplicas: 10
+  remoteAuth:
+    enabled: true
+    backend: netbox.authentication.RemoteUserBackend
+    header: HTTP_REMOTE_USER
+    autoCreateUser: true
+    defaultGroups:
+      - sso-default-readonly
   postgresql:
     enabled: false
   service:
     annotations:
-      cloud.google.com/neg: '{"ingress": true}'
+      cloud.google.com/neg: '{"ingress": false}'
   externalDatabase:
     host: localhost
     port: 5432
@@ -58,6 +76,84 @@ values:
       requests:
         memory: "256Mi"
         cpu:    "200m"
+  - name: vouch-proxy
+    image: quay.io/vouch/vouch-proxy:0.36
+    ports:
+    - name: vouch-http
+      containerPort: 9090
+    volumeMounts:
+    - name: nginx-vouch-config
+      mountPath: /config/config.yaml
+      subPath: config.yaml
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 999
+    livenessProbe:
+      httpGet:
+        path: /healthcheck
+        port: vouch-http
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 5
+    readinessProbe:
+      httpGet:
+        path: /healthcheck
+        port: vouch-http
+      initialDelaySeconds: 0
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 5
+      periodSeconds: 10
+    startupProbe:
+      httpGet:
+        path: /healthcheck
+        port: vouch-http
+      initialDelaySeconds: 5
+      failureThreshold: 30
+      periodSeconds: 10
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu:    "200m"
+  - name: nginx
+    image: nginx:1.21
+    ports:
+    - name: nginx-http
+      containerPort: 8000
+    volumeMounts:
+    - name: nginx-vouch-config
+      mountPath: /etc/nginx/nginx.conf
+      subPath: nginx.conf
+    securityContext:
+      runAsNonRoot: false
+    livenessProbe:
+      httpGet:
+        path: /healthcheck
+        port: nginx-http
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 6
+    readinessProbe:
+      httpGet:
+        path: /healthcheck
+        port: nginx-http
+      initialDelaySeconds: 5
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+      periodSeconds: 5
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu:    "200m"
+  extraVolumes:
+  - name: nginx-vouch-config
+    configMap:
+      name: nginx-vouch-config
   housekeeping:
     resources:
       limits:

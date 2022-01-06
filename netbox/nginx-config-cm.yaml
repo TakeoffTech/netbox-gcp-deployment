@@ -1,0 +1,147 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-vouch-config
+data:
+  nginx.conf: |
+    user  nginx;
+    worker_processes  1;
+
+    error_log  /dev/stdout info;
+    pid        /var/run/nginx.pid;
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /dev/stdout main;
+
+        sendfile        on;
+        #tcp_nopush     on;
+
+        keepalive_timeout  65;
+
+        upstream vouch {
+            # set this to location of the vouch proxy
+            server localhost:9090;
+        }
+
+        server {
+            listen 8000;
+            root /var/www/html/;
+
+            # This location serves all of the paths vouch uses
+            location ~ ^/(auth|login|logout) {
+              proxy_pass http://vouch;
+              proxy_set_header Host $http_host;
+            }
+
+            location = /validate {
+              # forward the /validate request to Vouch Proxy
+              proxy_pass http://vouch/validate;
+
+              # be sure to pass the original host header
+              proxy_set_header Host $http_host;
+
+              # Vouch Proxy only acts on the request headers
+              proxy_pass_request_body off;
+              proxy_set_header Content-Length "";
+
+              # optionally add X-Vouch-User as returned by Vouch Proxy along with the request
+              auth_request_set $auth_resp_x_vouch_user $upstream_http_x_vouch_user;
+
+              # these return values are used by the @error401 call
+              auth_request_set $auth_resp_jwt $upstream_http_x_vouch_jwt;
+              auth_request_set $auth_resp_err $upstream_http_x_vouch_err;
+              auth_request_set $auth_resp_failcount $upstream_http_x_vouch_failcount;
+            }
+
+            # if validate returns `401 not authorized` then forward the request to the error401block
+            error_page 401 = @error401;
+
+            location @error401 {
+                # redirect to Vouch Proxy for login
+                return 302 https://$http_host/login?url=https://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err;
+                # you usually *want* to redirect to Vouch running behind the same Nginx config proteced by https
+                # but to get started you can just forward the end user to the port that vouch is running on
+            }
+
+            location /healthcheck {
+              return 200 "healthy\n";
+            }
+
+            location /api {
+              # Bypass auth_request for API calls
+              proxy_pass http://127.0.0.1:8080;
+              proxy_set_header X-Forwarded-Host $http_host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-Proto $scheme;
+            }
+
+            # proxy pass authorized requests to your service
+            location / {
+              # send all requests to the `/validate` endpoint for authorization
+              auth_request /validate;
+              auth_request_set $auth_user $upstream_http_x_vouch_user;
+
+              # forward authorized requests to your service protectedapp.yourdomain.com
+              proxy_pass http://127.0.0.1:8080;
+              # you may need to set these variables in this block as per https://github.com/vouch/vouch-proxy/issues/26#issuecomment-425215810
+              #    auth_request_set $auth_resp_x_vouch_user $upstream_http_x_vouch_user;
+              #    auth_request_set $auth_resp_x_vouch_idp_claims_groups $upstream_http_x_vouch_idp_claims_groups;
+              #    auth_request_set $auth_resp_x_vouch_idp_claims_given_name $upstream_http_x_vouch_idp_claims_given_name;
+
+              # set user header (usually an email)
+              proxy_set_header REMOTE_USER $auth_user;
+              proxy_set_header X-Forwarded-Host $http_host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-Proto $scheme;
+              # proxy_set_header X-Vouch-User $auth_resp_x_vouch_user;
+              # optionally pass any custom claims you are tracking
+              #     proxy_set_header X-Vouch-IdP-Claims-Groups $auth_resp_x_vouch_idp_claims_groups;
+              #     proxy_set_header X-Vouch-IdP-Claims-Given_Name $auth_resp_x_vouch_idp_claims_given_name;
+              # optionally pass the accesstoken or idtoken
+              #     proxy_set_header X-Vouch-IdP-AccessToken $auth_resp_x_vouch_idp_accesstoken;
+              #     proxy_set_header X-Vouch-IdP-IdToken $auth_resp_x_vouch_idp_idtoken;
+            }
+        }
+
+    }
+  config.yaml: |
+    vouch:
+      allowAllUsers: true   # handle app assignment in okta
+      jwt:
+       secret: myrandomjwt-secret-for-testing
+       compress: true
+      cookie:
+        name: VouchCookie     # has to be the same name as in nginx for caching: proxy_cache_key $cookie_vouchcookie;
+        secure: true
+        domain: takeofftech.org
+        httpOnly: true
+        sameSite: lax
+      headers:
+        idtoken: X-Vouch-IdP-IdToken
+      post_logout_redirect_uris:
+        - http://netbox-user-scheuk.takeofftech.org/login
+    oauth:
+      provider: oidc
+      client_id: 0oa14e387xoZ52mzi0h8
+      client_secret: muAA-DgwfGnnFehvD1gA4ml6zcCkO5BjJpefiqcm
+      auth_url: https://takeoff.oktapreview.com/oauth2/default/v1/authorize
+      token_url: https://takeoff.oktapreview.com/oauth2/default/v1/token
+      user_info_url: https://takeoff.oktapreview.com/oauth2/default/v1/userinfo
+      end_session_endpoint: https://takeoff.oktapreview.com/oauth2/default/v1/logout
+      scopes:
+        - openid
+        - email
+      # Set the callback URL to the domain that Vouch is running on
+      callback_url: https://netbox-user-scheuk.takeofftech.org/auth
