@@ -3,6 +3,7 @@ type: helm
 name: netbox-ingress
 dependencies:
   - netbox-app-infra
+disabled: true
 values:
   ingress:
     globalStaticIpName: ${providers.kubernetes.outputs.app-namespace}

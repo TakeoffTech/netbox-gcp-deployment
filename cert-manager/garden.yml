@@ -1,0 +1,27 @@
+kind: Module
+type: helm
+name: cert-manager
+repo: https://charts.jetstack.io
+chart: cert-manager
+version: v1.6.1
+namespace: cert-manager
+# serviceResource:
+#   kind: Deployment
+#   name: ingress-nginx
+dependencies:
+  - netbox-app-infra
+values:
+  installCRDs: true
+  global:
+    leaderElection:
+      namespace: cert-manager
+---
+kind: Module
+type: kubernetes
+name: cert-manager-config
+description: cert-manager Issuer config
+dependencies:
+  - cert-manager
+files:
+  - production-issuer.yaml
+  - staging-issuer.yaml

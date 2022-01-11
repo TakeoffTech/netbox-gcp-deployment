@@ -1,0 +1,66 @@
+kind: Module
+type: helm
+name: vouch-proxy
+repo: https://halkeye.github.io/helm-charts
+chart: vouch
+version: 3.0.1
+serviceResource:
+  kind: Deployment
+  name: vouch-proxy
+dependencies:
+  - netbox-app-infra
+  - cert-manager
+  - ingress-nginx
+values:
+  image: 
+    tag: "0.36"
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu:    "200m"
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: "letsencrypt-staging"
+    hosts:
+      - vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+    tls:
+     - secretName: vouch-proxy-tls
+       hosts:
+         - vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+  config:
+    vouch:
+      allowAllUsers: true
+      jwt:
+        secret: uiAtJBOJkaOnyVIUUhhqqgCZqS64rfWwkan5WqpfUyoJCGASaSvNqtMl09SemEM
+        compress: true
+      cookie:
+        name: VouchCookie     # has to be the same name as in nginx for caching: proxy_cache_key $cookie_vouchcookie;
+        secure: true
+        domain: takeofftech.org
+        httpOnly: true
+        sameSite: lax
+      headers:
+        idtoken: X-Vouch-IdP-IdToken
+        querystring: access_token
+        claims:
+          - name
+          - email
+          - groups
+      post_logout_redirect_uris:
+        - http://netbox-user-scheuk.takeofftech.org/login
+    oauth:
+      provider: oidc
+      client_id: 0oa14e387xoZ52mzi0h8
+      client_secret: muAA-DgwfGnnFehvD1gA4ml6zcCkO5BjJpefiqcm
+      auth_url: https://takeoff.oktapreview.com/oauth2/v1/authorize
+      token_url: https://takeoff.oktapreview.com/oauth2/v1/token
+      user_info_url: https://takeoff.oktapreview.com/oauth2/v1/userinfo
+      end_session_endpoint: https://takeoff.oktapreview.com/oauth2/v1/logout
+      scopes:
+        - openid
+        - email
+        - profile
+        - groups
+      # Set the callback URL to the domain that Vouch is running on
+      callback_url: https://vouch-netbox-user-scheuk.takeofftech.org/auth

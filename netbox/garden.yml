@@ -1,9 +1,3 @@
-kind: Module
-type: kubernetes
-name: nginx-vouch-config
-description: nginx and vouch config
-files:
-  - nginx-config-cm.yaml
 ---
 kind: Module
 type: helm
@@ -17,9 +11,9 @@ serviceResource:
   name: netbox
 dependencies:
   - netbox-app-infra
-  - nginx-vouch-config
+  - cert-manager
+  - ingress-nginx
 values:
-  debug: true
   internalIPs: ['0.0.0.0']
   image:
     tag: v3.1-1.5.1
@@ -29,10 +23,40 @@ values:
   remoteAuth:
     enabled: true
     backend: netbox.authentication.RemoteUserBackend
-    header: HTTP_REMOTE_USER
+    header: HTTP_X_VOUCH_USER
     autoCreateUser: true
-    defaultGroups:
-      - sso-default-readonly
+    groupSyncEnabled: true
+    groupHeader: HTTP_X_VOUCH_GROUPS
+    superusers:
+      - kevin.scheunemann@takeoff.com
+    staffUsers:
+      - kevin.scheunemann@takeoff.com
+    groupSeparator: ','
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: "letsencrypt-staging"
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/auth-response-headers: X-Vouch-User
+      nginx.ingress.kubernetes.io/auth-signin: https://vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org/login?url=$scheme://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err
+      nginx.ingress.kubernetes.io/auth-snippet: |
+        auth_request_set $auth_resp_jwt $upstream_http_x_vouch_jwt;
+        auth_request_set $auth_resp_err $upstream_http_x_vouch_err;
+        auth_request_set $auth_resp_failcount $upstream_http_x_vouch_failcount;
+      nginx.ingress.kubernetes.io/auth-url: https://vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org/validate
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        auth_request_set $auth_resp_x_vouch_groups $upstream_http_x_vouch_idp_claims_groups;
+        access_by_lua_block {
+          ngx.req.set_header("X-Vouch-Groups",  string.gsub(ngx.var.auth_resp_x_vouch_groups, "\"", ""))
+        }
+    hosts:
+      - host: ${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+        paths:
+          - /
+    tls:
+     - secretName: netbox-tls
+       hosts:
+         - ${providers.kubernetes.outputs.app-namespace}.takeofftech.org
   postgresql:
     enabled: false
   service:
@@ -76,85 +100,8 @@ values:
       requests:
         memory: "256Mi"
         cpu:    "200m"
-  - name: vouch-proxy
-    image: quay.io/vouch/vouch-proxy:0.36
-    ports:
-    - name: vouch-http
-      containerPort: 9090
-    volumeMounts:
-    - name: nginx-vouch-config
-      mountPath: /config/config.yaml
-      subPath: config.yaml
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 999
-    livenessProbe:
-      httpGet:
-        path: /healthcheck
-        port: vouch-http
-      initialDelaySeconds: 0
-      periodSeconds: 10
-      timeoutSeconds: 1
-      successThreshold: 1
-      failureThreshold: 5
-    readinessProbe:
-      httpGet:
-        path: /healthcheck
-        port: vouch-http
-      initialDelaySeconds: 0
-      timeoutSeconds: 1
-      successThreshold: 1
-      failureThreshold: 5
-      periodSeconds: 10
-    startupProbe:
-      httpGet:
-        path: /healthcheck
-        port: vouch-http
-      initialDelaySeconds: 5
-      failureThreshold: 30
-      periodSeconds: 10
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu:    "200m"
-  - name: nginx
-    image: nginx:1.21
-    ports:
-    - name: nginx-http
-      containerPort: 8000
-    volumeMounts:
-    - name: nginx-vouch-config
-      mountPath: /etc/nginx/nginx.conf
-      subPath: nginx.conf
-    securityContext:
-      runAsNonRoot: false
-    livenessProbe:
-      httpGet:
-        path: /healthcheck
-        port: nginx-http
-      initialDelaySeconds: 30
-      periodSeconds: 10
-      timeoutSeconds: 5
-      successThreshold: 1
-      failureThreshold: 6
-    readinessProbe:
-      httpGet:
-        path: /healthcheck
-        port: nginx-http
-      initialDelaySeconds: 5
-      timeoutSeconds: 3
-      successThreshold: 1
-      failureThreshold: 3
-      periodSeconds: 5
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu:    "200m"
-  extraVolumes:
-  - name: nginx-vouch-config
-    configMap:
-      name: nginx-vouch-config
   housekeeping:
+    enabled: false
     resources:
       limits:
         cpu: 500m
