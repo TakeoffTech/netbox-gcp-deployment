@@ -13,50 +13,48 @@ dependencies:
   - netbox-app-infra
   - cert-manager
   - ingress-nginx
+variables:
+  api_token: c85f27d90842aaab5624d48eb63d5da9beec5175
 values:
   internalIPs: ['0.0.0.0']
   image:
     tag: v3.1-1.5.1
   autoscaling:
     enabled: true
+    minReplicas: "${environment.name == 'prod' ? 2 : 1}"
     maxReplicas: 10
+  superuser:
+    name: admin
+    email: admin@example.com
+    password: pw4admin
+    apiToken: ${var.api_token}
   remoteAuth:
-    enabled: true
+    enabled: ${!var.disable_oidc_auth}
     backend: netbox.authentication.RemoteUserBackend
     header: HTTP_X_VOUCH_USER
     autoCreateUser: true
     groupSyncEnabled: true
     groupHeader: HTTP_X_VOUCH_GROUPS
-    superusers:
-      - kevin.scheunemann@takeoff.com
-    staffUsers:
-      - kevin.scheunemann@takeoff.com
+    superuserGroups:
+      - netbox-admins
+    staffGroups:
+      - netbox-superadmins
+    defaultGroups:
+      - netbox-users
     groupSeparator: ','
   ingress:
-    enabled: true
+    enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && var.disable_oidc_auth)}
+    className: nginx
     annotations:
-      cert-manager.io/issuer: "letsencrypt-staging"
-      kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/auth-response-headers: X-Vouch-User
-      nginx.ingress.kubernetes.io/auth-signin: https://vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org/login?url=$scheme://$http_host$request_uri&vouch-failcount=$auth_resp_failcount&X-Vouch-Token=$auth_resp_jwt&error=$auth_resp_err
-      nginx.ingress.kubernetes.io/auth-snippet: |
-        auth_request_set $auth_resp_jwt $upstream_http_x_vouch_jwt;
-        auth_request_set $auth_resp_err $upstream_http_x_vouch_err;
-        auth_request_set $auth_resp_failcount $upstream_http_x_vouch_failcount;
-      nginx.ingress.kubernetes.io/auth-url: https://vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org/validate
-      nginx.ingress.kubernetes.io/configuration-snippet: |
-        auth_request_set $auth_resp_x_vouch_groups $upstream_http_x_vouch_idp_claims_groups;
-        access_by_lua_block {
-          ngx.req.set_header("X-Vouch-Groups",  string.gsub(ngx.var.auth_resp_x_vouch_groups, "\"", ""))
-        }
+      cert-manager.io/issuer: "${environment.name == 'prod' ? 'letsencrypt-prod' : 'letsencrypt-staging'}"
     hosts:
-      - host: ${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+      - host: ${runtime.services.netbox-app-infra.outputs.netbox_host}
         paths:
           - /
     tls:
      - secretName: netbox-tls
        hosts:
-         - ${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+         - ${runtime.services.netbox-app-infra.outputs.netbox_host}
   postgresql:
     enabled: false
   service:
@@ -117,3 +115,22 @@ values:
   cachingRedis:
     host: ${runtime.services.netbox-app-infra.outputs.redis_host}
     port: 6379
+---
+kind: Module
+type: exec
+name: netbox-create-groups
+local: true
+include: 
+  - create-netbox-groups.sh
+  - object-types.json
+tasks:
+  - name: netbox-create-groups
+    disabled: ${var.disable_oidc_auth}
+    dependencies:
+      - netbox
+      - netbox-app-infra
+    env:
+      netboxHost: ${runtime.services.netbox-app-infra.outputs.netbox_host}
+      groups: netbox-admins netbox-superadmins netbox-users
+      token: ${modules.netbox.var.api_token}
+    command: [./create-netbox-groups.sh]

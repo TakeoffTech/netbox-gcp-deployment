@@ -6,6 +6,11 @@ variables:
   region: ${var.google_compute_region}
   namespace: ${providers.kubernetes.outputs.app-namespace}
   cloudsql_instance_name: ${providers.terraform.outputs.cloudsql_instance_name}
+  dns_project_id: ${var.google_dns_project_id}
+  managed_zone: ${var.google_managed_zone}
+  enable_auth: "${var.disable_oidc_auth ? false : true}"
+  okta_org_name: ${var.okta_org_name}
+  okta_base_url: ${var.okta_base_url}
 allowDestroy: true
 autoApply: true
 generateFiles:

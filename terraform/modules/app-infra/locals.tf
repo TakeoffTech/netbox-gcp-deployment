@@ -1,3 +1,3 @@
 locals {
-  name = var.namespace == "" ? "netbox" : var.namespace 
+  name = var.namespace == "" ? "netbox" : var.namespace
 }

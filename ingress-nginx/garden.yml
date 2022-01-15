@@ -17,3 +17,4 @@ values:
       loadBalancerIP: ${runtime.services.netbox-app-infra.outputs.external_ip}
   autoscaling:
     enabled: true
+    minReplicas: "${environment.name == 'prod' ? 2 : 1}"

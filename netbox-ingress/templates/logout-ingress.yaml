@@ -14,15 +14,12 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ $fullName }}-logout
   labels:
     {{- include "netbox-ingress.labels" . | nindent 4 }}
-  {{- if or .Values.commonAnnotations .Values.ingress.annotations }}
+  {{- if .Values.ingress.logoutAnnotations }}
   annotations:
-  {{- with .Values.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-  {{- with .Values.commonAnnotations }}
+  {{- with .Values.ingress.logoutAnnotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -44,7 +41,7 @@ spec:
     - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          - path: /
+          - path: /logout
             {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
             pathType: Prefix
             {{- end }}

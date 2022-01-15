@@ -4,13 +4,14 @@ name: vouch-proxy
 repo: https://halkeye.github.io/helm-charts
 chart: vouch
 version: 3.0.1
+skipDeploy: ${var.disable_oidc_auth}
 serviceResource:
   kind: Deployment
   name: vouch-proxy
 dependencies:
-  - netbox-app-infra
   - cert-manager
   - ingress-nginx
+  - netbox-app-infra
 values:
   image: 
     tag: "0.36"
@@ -21,13 +22,14 @@ values:
   ingress:
     enabled: true
     annotations:
-      cert-manager.io/issuer: "letsencrypt-staging"
+      cert-manager.io/issuer: "${environment.name == 'prod' ? 'letsencrypt-prod' : 'letsencrypt-staging'}"
+      kubernetes.io/ingress.class: "nginx"
     hosts:
-      - vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+      - ${runtime.services.netbox-app-infra.outputs.vouch_host}
     tls:
      - secretName: vouch-proxy-tls
        hosts:
-         - vouch-${providers.kubernetes.outputs.app-namespace}.takeofftech.org
+         - ${runtime.services.netbox-app-infra.outputs.vouch_host}
   config:
     vouch:
       allowAllUsers: true
@@ -37,7 +39,7 @@ values:
       cookie:
         name: VouchCookie     # has to be the same name as in nginx for caching: proxy_cache_key $cookie_vouchcookie;
         secure: true
-        domain: takeofftech.org
+        domain: ${runtime.services.netbox-app-infra.outputs.netbox_domain}
         httpOnly: true
         sameSite: lax
       headers:
@@ -48,19 +50,19 @@ values:
           - email
           - groups
       post_logout_redirect_uris:
-        - http://netbox-user-scheuk.takeofftech.org/login
+        - https://${runtime.services.netbox-app-infra.outputs.netbox_host}/login
     oauth:
       provider: oidc
-      client_id: 0oa14e387xoZ52mzi0h8
-      client_secret: muAA-DgwfGnnFehvD1gA4ml6zcCkO5BjJpefiqcm
-      auth_url: https://takeoff.oktapreview.com/oauth2/v1/authorize
-      token_url: https://takeoff.oktapreview.com/oauth2/v1/token
-      user_info_url: https://takeoff.oktapreview.com/oauth2/v1/userinfo
-      end_session_endpoint: https://takeoff.oktapreview.com/oauth2/v1/logout
+      client_id: ${runtime.services.netbox-app-infra.outputs.okta_client_id}
+      client_secret: ${runtime.services.netbox-app-infra.outputs.okta_client_secret}
+      auth_url: https://${runtime.services.netbox-app-infra.outputs.okta_org_name}.${runtime.services.netbox-app-infra.outputs.okta_base_url}/oauth2/v1/authorize
+      token_url: https://${runtime.services.netbox-app-infra.outputs.okta_org_name}.${runtime.services.netbox-app-infra.outputs.okta_base_url}/oauth2/v1/token
+      user_info_url: https://${runtime.services.netbox-app-infra.outputs.okta_org_name}.${runtime.services.netbox-app-infra.outputs.okta_base_url}/oauth2/v1/userinfo
+      end_session_endpoint: https://${runtime.services.netbox-app-infra.outputs.okta_org_name}.${runtime.services.netbox-app-infra.outputs.okta_base_url}/oauth2/v1/logout
       scopes:
         - openid
         - email
         - profile
         - groups
       # Set the callback URL to the domain that Vouch is running on
-      callback_url: https://vouch-netbox-user-scheuk.takeofftech.org/auth
+      callback_url: https://${runtime.services.netbox-app-infra.outputs.vouch_host}/auth

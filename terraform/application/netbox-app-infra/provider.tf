@@ -12,7 +12,7 @@ data "google_client_config" "default" {}
 
 # Defer reading the cluster data until the GKE cluster exists.
 data "google_container_cluster" "default" {
-  name = var.gke_cluster_name
+  name     = var.gke_cluster_name
   location = var.region
 }
 

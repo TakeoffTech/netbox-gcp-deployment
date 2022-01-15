@@ -19,7 +19,7 @@ resource "google_container_cluster" "cluster" {
   private_cluster_config {
     enable_private_nodes    = true
     enable_private_endpoint = false
-    master_ipv4_cidr_block  = "172.16.0.0/28"
+    master_ipv4_cidr_block  = var.master_ipv4_cidr_block
   }
   # This is where Dataplane V2 is enabled.
   datapath_provider = var.enable_dataplane_v2 ? "ADVANCED_DATAPATH" : "DATAPATH_PROVIDER_UNSPECIFIED"

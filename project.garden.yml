@@ -3,11 +3,19 @@ name: netbox
 variables:
   base_envname: ${slice((local.env.CI_REF_NAME_SLUG || replace(local.username, ".", "-")), '0', '11')}
   google_project_id: ${local.env.GOOGLE_PROJECT || "replace-me-with-your-project-id"}
-  google_compute_region: us-central1
+  google_compute_region: ${local.env.GOOGLE_REGION || "us-central1"}
   terraform_root: "./terraform/application/netbox-infra"
+  google_dns_project_id: ${local.env.GOOGLE_DNS_PROJECT || ""}
+  google_managed_zone: ${local.env.MANAGED_ZONE || "replace-me-with-your-managed-zone-name"}
+  okta_org_name: ${local.env.OKTA_ORG_NAME || "replace-me-with-your-OKTA-org"}
+  okta_base_url: ${local.env.OKTA_BASE_URL || "oktapreview.com"}
+  cert_registration_email: ${local.env.CERT_REG_EMAIL || "user@example.com"}
+  disable_oidc_auth: false
 environments:
   - name: dev
     defaultNamespace: user-${var.base_envname}
+  - name: prod
+    defaultNamespace: netbox
 providers:
   - name: exec
     initScript: "${local.projectPath}/bootstrap.sh ${var.google_project_id} ${var.terraform_root}"

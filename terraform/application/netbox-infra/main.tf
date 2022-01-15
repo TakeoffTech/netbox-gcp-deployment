@@ -27,7 +27,7 @@ resource "google_storage_bucket" "project_bucket" {
 ##### Deploy GKE autopilot cluster #####
 module "gke_autopilot" {
   source = "../../modules/gke_autopilot"
-  
+
   name   = local.cluster_name
   region = var.region
 }
@@ -41,7 +41,7 @@ module "postgresql-db" {
   project_id           = var.project_id
   availability_type    = "REGIONAL"
   region               = var.region
-  zone                 = "${var.region}-a"   
+  zone                 = "${var.region}-a"
   tier                 = "db-f1-micro"
 
   deletion_protection = false
@@ -57,16 +57,16 @@ module "postgresql-db" {
 }
 
 module "app-infra" {
-  count = var.gcloud_get_credentials ? 0 : 1
+  count  = var.gcloud_get_credentials ? 0 : 1
   source = "../../modules/app-infra"
 
-  project_id = var.project_id
-  region  = var.region
+  project_id             = var.project_id
+  region                 = var.region
   cloudsql_instance_name = module.postgresql-db.instance_name
 }
 
 resource "null_resource" "kube_context" {
-  count = var.gcloud_get_credentials ? 1 : 0
+  count      = var.gcloud_get_credentials ? 1 : 0
   depends_on = [module.gke_autopilot]
 
   triggers = {

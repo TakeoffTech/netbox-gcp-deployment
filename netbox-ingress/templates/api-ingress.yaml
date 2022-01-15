@@ -1,5 +1,6 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "netbox-ingress.fullname" . -}}
+{{- $dot := . -}}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
@@ -14,15 +15,12 @@ apiVersion: extensions/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ $fullName }}-api
   labels:
     {{- include "netbox-ingress.labels" . | nindent 4 }}
-  {{- if or .Values.commonAnnotations .Values.ingress.annotations }}
+  {{- if .Values.ingress.apiAnnotations }}
   annotations:
-  {{- with .Values.ingress.annotations }}
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
-  {{- with .Values.commonAnnotations }}
+  {{- with .Values.ingress.apiAnnotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- end }}
@@ -44,18 +42,20 @@ spec:
     - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          - path: /
+        {{- range tuple "/api" "/static" }}
+          - path: {{ . }}
             {{- if semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion }}
             pathType: Prefix
             {{- end }}
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
-                name: {{ .Values.ingress.serviceName }}
+                name: {{ $dot.Values.ingress.serviceName }}
                 port:
-                  name: {{ .Values.ingress.servicePort }}
+                  name: {{ $dot.Values.ingress.servicePort }}
               {{- else }}
-              serviceName: {{ .Values.ingress.serviceName }}
-              servicePort: {{ .Values.ingress.servicePort }}
+              serviceName: {{ $dot.Values.ingress.serviceName }}
+              servicePort: {{ $dot.Values.ingress.servicePort }}
               {{- end }}
+          {{- end }}
 {{- end }}
