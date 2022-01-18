@@ -49,13 +49,13 @@ values:
     annotations:
       cert-manager.io/issuer: "${environment.name == 'prod' ? 'letsencrypt-prod' : 'letsencrypt-staging'}"
     hosts:
-      - host: ${runtime.services.netbox-app-infra.outputs.netbox_host}
+      - host: "${runtime.services.netbox-app-infra.outputs.netbox_host == '' ? runtime.services.netbox-app-infra.outputs.external_ip : runtime.services.netbox-app-infra.outputs.netbox_host}"
         paths:
           - /
     tls:
      - secretName: netbox-tls
        hosts:
-         - ${runtime.services.netbox-app-infra.outputs.netbox_host}
+         - "${runtime.services.netbox-app-infra.outputs.netbox_host == '' ? runtime.services.netbox-app-infra.outputs.external_ip : runtime.services.netbox-app-infra.outputs.netbox_host}"
   postgresql:
     enabled: false
   service:

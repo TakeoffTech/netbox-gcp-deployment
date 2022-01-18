@@ -10,7 +10,7 @@ variables:
   okta_org_name: ${local.env.OKTA_ORG_NAME || "replace-me-with-your-OKTA-org"}
   okta_base_url: ${local.env.OKTA_BASE_URL || "oktapreview.com"}
   cert_registration_email: ${local.env.CERT_REG_EMAIL || "user@example.com"}
-  disable_oidc_auth: false
+  disable_oidc_auth: ${local.env.DISABLE_OIDC_AUTH || true }
 environments:
   - name: dev
     defaultNamespace: user-${var.base_envname}
