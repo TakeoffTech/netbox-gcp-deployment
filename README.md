@@ -197,7 +197,9 @@ To set these variable before running `garden deploy` you have two options:
 ### Hostname creation logic
 We automatically create dns records for netbox using the `google_managed_zone` domain. 
 If you are deploying into the `prod` environment, it will create `netbox.<google_managed_zone.domain>`. 
-If the dns zone contains `netbox.` we assume `google_managed_zone` is a subdomain for netbox (ie `netbox.domain.local`) and will create a record just for `<google_managed_zone.domain>`. When you have `disable_oidc_auth` set to `false` if will create a record for vouch-proxy for clients and okta to access and they are created like this `vouch.<google_managed_zone.domain>` if it's a `netbox.` subdomain. If it's not a subdomain it will create `vouch-netbox.<google_managed_zone.domain>`.
+If the dns zone contains `netbox.` we assume `google_managed_zone` is a subdomain for netbox (ie `netbox.domain.local`) and will create a record just for `<google_managed_zone.domain>`. 
+When you have `disable_oidc_auth` set to `false` we will create a record for vouch-proxy for clients and okta to access and they are created like this `vouch.<google_managed_zone.domain>` if it's a `netbox.` subdomain. 
+If it's not a subdomain it will create `vouch-netbox.<google_managed_zone.domain>` for vouch-proxy.
 
 For development environment, replace `netbox` with `netbox-user-<local.username>`
 ### Setting your environment variables
