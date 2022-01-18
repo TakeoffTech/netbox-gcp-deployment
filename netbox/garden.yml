@@ -11,10 +11,11 @@ serviceResource:
   name: netbox
 dependencies:
   - netbox-app-infra
+  - netbox-secrets
   - cert-manager
   - ingress-nginx
 variables:
-  api_token: c85f27d90842aaab5624d48eb63d5da9beec5175
+  api_token: ${runtime.services.netbox-secrets.outputs.sha1_password}
 values:
   internalIPs: ['0.0.0.0']
   image:
@@ -26,7 +27,7 @@ values:
   superuser:
     name: admin
     email: admin@example.com
-    password: pw4admin
+    password: ${runtime.services.netbox-secrets.outputs.password}
     apiToken: ${var.api_token}
   remoteAuth:
     enabled: ${!var.disable_oidc_auth}
@@ -117,6 +118,16 @@ values:
     port: 6379
 ---
 kind: Module
+type: kubernetes
+name: netbox-housekeeping
+# helm install above fails when housekeeping is on with: admission webhook "workload-defaulter.common-webhooks.networking.gke.io" denied the request: no kind "CronJob" is registered for version "batch/v1" in scheme "pkg/runtime/scheme.go:100"
+description: Netbox Housekeeping cronjob deployment - hack
+dependencies:
+  - netbox
+files:
+  - netbox-housekeeping-cronjob.yaml
+---
+kind: Module
 type: exec
 name: netbox-create-groups
 local: true
@@ -129,6 +140,7 @@ tasks:
     dependencies:
       - netbox
       - netbox-app-infra
+      - netbox-secrets
     env:
       netboxHost: ${runtime.services.netbox-app-infra.outputs.netbox_host}
       groups: netbox-admins netbox-superadmins netbox-users

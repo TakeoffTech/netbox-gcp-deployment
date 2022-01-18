@@ -6,6 +6,7 @@
 
 # Generated backend.tf files
 **/terraform/application/**/backend.tf
+netbox-secrets/backend.tf
 
 # .tfstate files
 *.tfstate
@@ -18,3 +19,7 @@
 #
 *.tfvars
 *.tfvars.json
+
+#exclude gaden env files
+garden.env
+garden.*.env
