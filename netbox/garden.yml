@@ -6,13 +6,10 @@ repo: https://charts.boo.tc
 chart: netbox
 version: 4.0.1
 timeout: 600
-serviceResource:
-  kind: Deployment
-  name: netbox
 dependencies:
   - netbox-app-infra
   - netbox-secrets
-  - cert-manager
+  - cert-manager-config
   - ingress-nginx
 variables:
   api_token: ${runtime.services.netbox-secrets.outputs.sha1_password}
@@ -30,7 +27,7 @@ values:
     password: ${runtime.services.netbox-secrets.outputs.password}
     apiToken: ${var.api_token}
   remoteAuth:
-    enabled: ${!var.disable_oidc_auth}
+    enabled: "${var.disable_oidc_auth ? true : false}"
     backend: netbox.authentication.RemoteUserBackend
     header: HTTP_X_VOUCH_USER
     autoCreateUser: true
@@ -44,7 +41,7 @@ values:
       - netbox-users
     groupSeparator: ','
   ingress:
-    enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && var.disable_oidc_auth)}
+    enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && !var.disable_oidc_auth)}
     className: nginx
     annotations:
       cert-manager.io/issuer: "${environment.name == 'prod' ? 'letsencrypt-prod' : 'letsencrypt-staging'}"
@@ -138,7 +135,7 @@ tasks:
   - name: netbox-create-groups
     disabled: ${var.disable_oidc_auth}
     dependencies:
-      - netbox
+      - netbox-ingress
       - netbox-app-infra
       - netbox-secrets
     env:

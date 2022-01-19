@@ -8,7 +8,7 @@ variables:
   cloudsql_instance_name: ${providers.terraform.outputs.cloudsql_instance_name}
   dns_project_id: ${var.google_dns_project_id}
   managed_zone: ${var.google_managed_zone}
-  enable_auth: "${var.disable_oidc_auth ? false : true}"
+  enable_auth: "${var.disable_oidc_auth ? true : false}"
   okta_org_name: ${var.okta_org_name}
   okta_base_url: ${var.okta_base_url}
 allowDestroy: true

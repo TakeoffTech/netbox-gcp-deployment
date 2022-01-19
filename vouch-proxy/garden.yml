@@ -9,9 +9,10 @@ serviceResource:
   kind: Deployment
   name: vouch-proxy
 dependencies:
-  - cert-manager
+  - cert-manager-config
   - ingress-nginx
   - netbox-app-infra
+  - netbox-secrets
 values:
   image: 
     tag: "0.36"
@@ -34,7 +35,7 @@ values:
     vouch:
       allowAllUsers: true
       jwt:
-        secret: uiAtJBOJkaOnyVIUUhhqqgCZqS64rfWwkan5WqpfUyoJCGASaSvNqtMl09SemEM
+        secret: ${runtime.services.netbox-secrets.outputs.jwt_secret}
         compress: true
       cookie:
         name: VouchCookie     # has to be the same name as in nginx for caching: proxy_cache_key $cookie_vouchcookie;

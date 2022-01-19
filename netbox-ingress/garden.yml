@@ -4,7 +4,7 @@ name: netbox-ingress
 skipDeploy: ${var.disable_oidc_auth}
 dependencies:
   - netbox
-  - vouch-proxy
+  - ingress-nginx
   - netbox-app-infra
 values:
    ingress:
