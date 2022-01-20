@@ -84,7 +84,19 @@
 
 <!-- [![Product Name Screen Shot][product-screenshot]](https://example.com) -->
 
-This project is designed to easily deploy netbox into an GCP project.
+This project is designed to easily deploy netbox into an GCP project in an opinonated way. 
+
+Features: 
+* Deploy netbox onto GKE autpilot cluster using the bootc helm chart: https://github.com/bootc/netbox-chart
+* Use a CloudSQL posgresql for database
+* Use a GCP memorystore for redis instance
+* Create DNS records in managed zone
+* Create SSL certs using Letsencrypt and cert-manager
+* Setup and configure necessary infrastructure to support Okta authentication
+  * ingress-nginx
+  * vouch-proxy
+  * Creates Okta OIDC application configuration via terraform
+  * creates a standard set of groups in netbox after deployment
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -140,6 +152,10 @@ https://cloud.google.com/sdk/docs/install
 * Follow the directions here to create a gcp project:
   [Creating a project](https://cloud.google.com/resource-manager/docs/creating-managing-projects#creating_a_project)
 
+#### Create a public DNS zone in your GCP project
+* this step is required if you want to setup a hostname to access netbox
+* [Create a public zone](https://cloud.google.com/dns/docs/zones#create-pub-zone)
+
 ### Installation
 
 1. Clone the repo
@@ -155,6 +171,37 @@ https://cloud.google.com/sdk/docs/install
 
 The current setup allows you to deploy netbox to empty gcp project.
 
+### Configuration Inputs
+| Garden Variable | ENV Variable | Description | Default | Required |
+|------|--------------|-------------|---------|:--------:|
+| google\_project\_id | GOOGLE\_PROJECT | Google Project ID to deploy netbox too | `""` | yes |
+| google\_compute\_region | GOOGLE\_REGION | Google Region to deploy netbox too | `"us-central1"` | no |
+| google\_managed\_zone | MANAGED\_ZONE | Google managed zone name (not the domain name) | `""` | no |
+| google\_dns\_project\_id | GOOGLE\_DNS\_PROJECT | Google Project ID that hosts the managed zone | `google_project_id` | no |
+| cert\_registration\_email | CERT\_REG\_EMAIL | Letsencrypt Certification registratiobn email | `"user@example.com"` | yes |
+| disable\_oidc\_auth | DISABLE\_OIDC\_AUTH | Flag to enable or disable okta oidc authentication | `true` | no |
+| okta\_org\_name | OKTA\_ORG\_NAME | Okta Org name | `""` | yes (if disable_oidc_auth is false) |
+| okta\_base\_url | OKTA\_BASE\_URL | Okta base url | `"oktapreview.com"` | no |
+| (ENV only variable for the okta terraform provider) | OKTA\_API\_TOKEN | Okta API token | `""` | yes (if disable_oidc_auth is false) |
+
+To set these variable before running `garden deploy` you have two options:
+1. simply set the ENV variable in your shell: 
+  ```sh
+  export ENV_VARIABLE=myconfig
+  ```
+2. create a garden.env or garden.<env-name>.env file: [Variable files (varfiles)](https://docs.garden.io/using-garden/variables-and-templating#variable-files-varfiles)
+  ```sh
+  echo garden_variable_name=myconfig >> garden.env
+  ```
+
+### Hostname creation logic
+We automatically create dns records for netbox using the `google_managed_zone` domain. 
+If you are deploying into the `prod` environment, it will create `netbox.<google_managed_zone.domain>`. 
+If the dns zone contains `netbox.` we assume `google_managed_zone` is a subdomain for netbox (ie `netbox.domain.local`) and will create a record just for `<google_managed_zone.domain>`. 
+When you have `disable_oidc_auth` set to `false` we will create a record for vouch-proxy for clients and okta to access and they are created like this `vouch.<google_managed_zone.domain>` if it's a `netbox.` subdomain. 
+If it's not a subdomain it will create `vouch-netbox.<google_managed_zone.domain>` for vouch-proxy.
+
+For development environment, replace `netbox` with `netbox-user-<local.username>`
 ### Setting your environment variables
 * Your google project ID
   ```sh

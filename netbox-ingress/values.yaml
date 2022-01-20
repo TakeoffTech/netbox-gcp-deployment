@@ -4,19 +4,17 @@
 
 ingress:
   enabled: true
-  # global-static-ip-name: 
-  annotations:
+  className: nginx
+  annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
+  host: netbox-example.local
   serviceName: netbox
-  servicePort: 80
+  servicePort: http
+  apiAnnotations: {}
+  logoutAnnotations: {}
 
-  # set global-static-ip-name for a static ip address
-  globalStaticIpName: myexternalIP
-
-  tls:
-    enabled: true
-    managedCertificate: true
-    httpRedirect: true
-    domains: []
-     # - my.domain
+  tls: []
+  #  - secretName: netbox-example-tls
+  #    hosts:
+  #      - netbox-example.local

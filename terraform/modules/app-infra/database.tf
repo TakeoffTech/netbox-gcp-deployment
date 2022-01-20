@@ -1,7 +1,7 @@
 resource "google_sql_database" "netbox" {
-  name       = local.name
-  project    = var.project_id
-  instance   = data.google_sql_database_instance.default.name
+  name     = local.name
+  project  = var.project_id
+  instance = data.google_sql_database_instance.default.name
   depends_on = [
     google_sql_user.netbox
   ]
@@ -16,10 +16,10 @@ resource "random_id" "user-password" {
 }
 
 resource "google_sql_user" "netbox" {
-  name       = local.name
-  project    = var.project_id
-  instance   = data.google_sql_database_instance.default.name
-  password   = random_id.user-password.hex
+  name     = local.name
+  project  = var.project_id
+  instance = data.google_sql_database_instance.default.name
+  password = random_id.user-password.hex
 }
 
 resource "kubernetes_secret" "psql-netbox-user" {

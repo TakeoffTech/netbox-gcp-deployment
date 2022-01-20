@@ -1,25 +1,63 @@
+---
 kind: Module
 type: helm
 name: netbox
 repo: https://charts.boo.tc
 chart: netbox
+version: 4.0.1
 timeout: 600
-serviceResource:
-  kind: Deployment
-  name: netbox
 dependencies:
   - netbox-app-infra
+  - netbox-secrets
+  - cert-manager-config
+  - ingress-nginx
+variables:
+  api_token: ${runtime.services.netbox-secrets.outputs.sha1_password}
 values:
+  internalIPs: ['0.0.0.0']
   image:
     tag: v3.1-1.5.1
   autoscaling:
     enabled: true
+    minReplicas: "${environment.name == 'prod' ? 2 : 1}"
     maxReplicas: 10
+  superuser:
+    name: admin
+    email: admin@example.com
+    password: ${runtime.services.netbox-secrets.outputs.password}
+    apiToken: ${var.api_token}
+  remoteAuth:
+    enabled: "${var.disable_oidc_auth ? true : false}"
+    backend: netbox.authentication.RemoteUserBackend
+    header: HTTP_X_VOUCH_USER
+    autoCreateUser: true
+    groupSyncEnabled: true
+    groupHeader: HTTP_X_VOUCH_GROUPS
+    superuserGroups:
+      - netbox-admins
+    staffGroups:
+      - netbox-superadmins
+    defaultGroups:
+      - netbox-users
+    groupSeparator: ','
+  ingress:
+    enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && !var.disable_oidc_auth)}
+    className: nginx
+    annotations:
+      cert-manager.io/issuer: "${environment.name == 'prod' ? 'letsencrypt-prod' : 'letsencrypt-staging'}"
+    hosts:
+      - host: "${runtime.services.netbox-app-infra.outputs.netbox_host == '' ? runtime.services.netbox-app-infra.outputs.external_ip : runtime.services.netbox-app-infra.outputs.netbox_host}"
+        paths:
+          - /
+    tls:
+     - secretName: netbox-tls
+       hosts:
+         - "${runtime.services.netbox-app-infra.outputs.netbox_host == '' ? runtime.services.netbox-app-infra.outputs.external_ip : runtime.services.netbox-app-infra.outputs.netbox_host}"
   postgresql:
     enabled: false
   service:
     annotations:
-      cloud.google.com/neg: '{"ingress": true}'
+      cloud.google.com/neg: '{"ingress": false}'
   externalDatabase:
     host: localhost
     port: 5432
@@ -59,6 +97,7 @@ values:
         memory: "256Mi"
         cpu:    "200m"
   housekeeping:
+    enabled: false
     resources:
       limits:
         cpu: 500m
@@ -74,3 +113,33 @@ values:
   cachingRedis:
     host: ${runtime.services.netbox-app-infra.outputs.redis_host}
     port: 6379
+---
+kind: Module
+type: kubernetes
+name: netbox-housekeeping
+# helm install above fails when housekeeping is on with: admission webhook "workload-defaulter.common-webhooks.networking.gke.io" denied the request: no kind "CronJob" is registered for version "batch/v1" in scheme "pkg/runtime/scheme.go:100"
+description: Netbox Housekeeping cronjob deployment - hack
+dependencies:
+  - netbox
+files:
+  - netbox-housekeeping-cronjob.yaml
+---
+kind: Module
+type: exec
+name: netbox-create-groups
+local: true
+include: 
+  - create-netbox-groups.sh
+  - object-types.json
+tasks:
+  - name: netbox-create-groups
+    disabled: ${var.disable_oidc_auth}
+    dependencies:
+      - netbox-ingress
+      - netbox-app-infra
+      - netbox-secrets
+    env:
+      netboxHost: ${runtime.services.netbox-app-infra.outputs.netbox_host}
+      groups: netbox-admins netbox-superadmins netbox-users
+      token: ${modules.netbox.var.api_token}
+    command: [./create-netbox-groups.sh]

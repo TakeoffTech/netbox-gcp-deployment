@@ -11,8 +11,8 @@ variable "region" {
 
 variable "gcloud_get_credentials" {
   description = "Setup kubecontext with gcloud container clusters get-credentials"
-  type = bool
-  default = false
+  type        = bool
+  default     = false
 }
 
 variable "google_apis" {

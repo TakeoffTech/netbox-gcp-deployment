@@ -1,0 +1,8 @@
+kind: Module
+type: terraform
+name: netbox-secrets
+allowDestroy: true
+autoApply: true
+generateFiles:
+  - sourcePath: ../terraform/templates/backend.tf.tmpl
+    targetPath: backend.tf
