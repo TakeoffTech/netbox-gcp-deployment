@@ -33,6 +33,9 @@ locals {
            description = "${title(var.name)} ${val.description}"
        }
     ]
+
+    readonly_group    = one([for groupname in keys(okta_group.app_group): groupname if length(regexall("-readonly", groupname)) > 0])
+    readonly_group_id = lookup(okta_group.app_group["${local.readonly_group}"], "id", "unknown_grouo_id")
 }
 
 resource "okta_group" "app_group" {
@@ -40,4 +43,13 @@ resource "okta_group" "app_group" {
 
   name        = each.value.name
   description = each.value.description
+}
+
+resource "okta_group_rule" "netbox_readonly_group_rule" {
+  count             = var.enable_auth ? 1 : 0
+  name              = local.readonly_group
+  status            = "ACTIVE"
+  group_assignments = [local.readonly_group_id]
+  expression_type   = "urn:okta:expression:1.0"
+  expression_value  = "isMemberOfGroup(\"${data.okta_group.assignment_group[0].id}\")"
 }

@@ -37,8 +37,6 @@ values:
       - ${runtime.services.netbox-app-infra.outputs.okta_admins_group} 
     staffGroups:
       - ${runtime.services.netbox-app-infra.outputs.okta_superadmins_group}
-    defaultGroups:
-      - ${runtime.services.netbox-app-infra.outputs.okta_readonly_group}
     groupSeparator: ','
   ingress:
     enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && !var.disable_okta_auth)}
