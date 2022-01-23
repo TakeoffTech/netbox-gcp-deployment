@@ -9,13 +9,15 @@ variables:
   google_managed_zone: ${local.env.MANAGED_ZONE || "replace-me-with-your-managed-zone-name"}
   okta_org_name: ${local.env.OKTA_ORG_NAME || "replace-me-with-your-OKTA-org"}
   okta_base_url: ${local.env.OKTA_BASE_URL || "oktapreview.com"}
+  okta_name_prefix: ${local.env.OKTA_NAME_PREFIX || ""} 
+  disable_okta_auth: ${local.env.DISABLE_OKTA_AUTH || true }
   cert_registration_email: ${local.env.CERT_REG_EMAIL || "user@example.com"}
-  disable_oidc_auth: ${local.env.DISABLE_OIDC_AUTH || true }
 environments:
   - name: dev
     defaultNamespace: user-${var.base_envname}
   - name: prod
     defaultNamespace: netbox
+    production: true
 providers:
   - name: exec
     initScript: "${local.projectPath}/bootstrap.sh ${var.google_project_id} ${var.terraform_root}"
@@ -40,5 +42,15 @@ providers:
     deploymentRegistry:
       hostname: ${var.google_compute_region}-docker.pkg.dev
       namespace: ${var.google_project_id}/containers
+    dependencies:
+      - terraform
+  - name: kubernetes
+    context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_id}
+    namespace: netbox
+    deploymentRegistry:
+      hostname: ${var.google_compute_region}-docker.pkg.dev
+      namespace: ${var.google_project_id}/containers
+    environments:
+      - prod
     dependencies:
       - terraform

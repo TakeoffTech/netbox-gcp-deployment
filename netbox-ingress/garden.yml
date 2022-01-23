@@ -1,7 +1,7 @@
 kind: Module
 type: helm
 name: netbox-ingress
-skipDeploy: ${var.disable_oidc_auth}
+skipDeploy: ${var.disable_okta_auth}
 dependencies:
   - netbox
   - ingress-nginx

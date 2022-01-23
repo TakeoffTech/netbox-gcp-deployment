@@ -16,7 +16,7 @@ variables:
 values:
   internalIPs: ['0.0.0.0']
   image:
-    tag: v3.1-1.5.1
+    tag: v3.1.6-1.5.1
   autoscaling:
     enabled: true
     minReplicas: "${environment.name == 'prod' ? 2 : 1}"
@@ -27,21 +27,21 @@ values:
     password: ${runtime.services.netbox-secrets.outputs.password}
     apiToken: ${var.api_token}
   remoteAuth:
-    enabled: "${var.disable_oidc_auth ? true : false}"
+    enabled: "${var.disable_okta_auth ? true : false}"
     backend: netbox.authentication.RemoteUserBackend
     header: HTTP_X_VOUCH_USER
     autoCreateUser: true
     groupSyncEnabled: true
     groupHeader: HTTP_X_VOUCH_GROUPS
     superuserGroups:
-      - netbox-admins
+      - ${runtime.services.netbox-app-infra.outputs.okta_admins_group} 
     staffGroups:
-      - netbox-superadmins
+      - ${runtime.services.netbox-app-infra.outputs.okta_superadmins_group}
     defaultGroups:
-      - netbox-users
+      - ${runtime.services.netbox-app-infra.outputs.okta_readonly_group}
     groupSeparator: ','
   ingress:
-    enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && !var.disable_oidc_auth)}
+    enabled: ${(runtime.services.netbox-app-infra.outputs.netbox_host != "" && !var.disable_okta_auth)}
     className: nginx
     annotations:
       cert-manager.io/issuer: "${environment.name == 'prod' ? 'letsencrypt-prod' : 'letsencrypt-staging'}"
@@ -133,13 +133,14 @@ include:
   - object-types.json
 tasks:
   - name: netbox-create-groups
-    disabled: ${var.disable_oidc_auth}
+    disabled: ${var.disable_okta_auth}
     dependencies:
       - netbox-ingress
       - netbox-app-infra
       - netbox-secrets
-    env:
-      netboxHost: ${runtime.services.netbox-app-infra.outputs.netbox_host}
-      groups: netbox-admins netbox-superadmins netbox-users
-      token: ${modules.netbox.var.api_token}
-    command: [./create-netbox-groups.sh]
+    command: [./create-netbox-groups.sh, 
+               -n, "${runtime.services.netbox-app-infra.outputs.netbox_host}", 
+               -t, "${modules.netbox.var.api_token}",
+               -a, "${runtime.services.netbox-app-infra.outputs.okta_admins_group}",
+               -s, "${runtime.services.netbox-app-infra.outputs.okta_superadmins_group}",
+               -r, "${runtime.services.netbox-app-infra.outputs.okta_readonly_group}"]

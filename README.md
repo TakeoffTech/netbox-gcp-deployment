@@ -156,6 +156,14 @@ https://cloud.google.com/sdk/docs/install
 * this step is required if you want to setup a hostname to access netbox
 * [Create a public zone](https://cloud.google.com/dns/docs/zones#create-pub-zone)
 
+#### Install httpie and jq (optional)
+* in order to automatically create netbox groups and permission from the API we use httpie and jq to create those
+* Homebrew on Mac
+  ```sh
+  brew tap garden-io/garden
+  brew install httpie jq
+  ```
+
 ### Installation
 
 1. Clone the repo
@@ -179,10 +187,11 @@ The current setup allows you to deploy netbox to empty gcp project.
 | google\_managed\_zone | MANAGED\_ZONE | Google managed zone name (not the domain name) | `""` | no |
 | google\_dns\_project\_id | GOOGLE\_DNS\_PROJECT | Google Project ID that hosts the managed zone | `google_project_id` | no |
 | cert\_registration\_email | CERT\_REG\_EMAIL | Letsencrypt Certification registratiobn email | `"user@example.com"` | yes |
-| disable\_oidc\_auth | DISABLE\_OIDC\_AUTH | Flag to enable or disable okta oidc authentication | `true` | no |
-| okta\_org\_name | OKTA\_ORG\_NAME | Okta Org name | `""` | yes (if disable_oidc_auth is false) |
+| disable\_okta_\_auth | DISABLE\_OKTA\_AUTH | Flag to enable or disable okta oidc authentication | `true` | no |
+| okta\_org\_name | OKTA\_ORG\_NAME | Okta Org name | `""` | yes (if disable_okta_auth is false) |
 | okta\_base\_url | OKTA\_BASE\_URL | Okta base url | `"oktapreview.com"` | no |
-| (ENV only variable for the okta terraform provider) | OKTA\_API\_TOKEN | Okta API token | `""` | yes (if disable_oidc_auth is false) |
+| okta\_name\_prefix | OKTA\_NAME\_PREFIX | Prefix to apply to all okta resources | `""` | no |
+| (ENV only variable for the okta terraform provider) | OKTA\_API\_TOKEN | Okta API token | `""` | yes (if disable_okta_auth is false) |
 
 To set these variable before running `garden deploy` you have two options:
 1. simply set the ENV variable in your shell: 
@@ -198,7 +207,7 @@ To set these variable before running `garden deploy` you have two options:
 We automatically create dns records for netbox using the `google_managed_zone` domain. 
 If you are deploying into the `prod` environment, it will create `netbox.<google_managed_zone.domain>`. 
 If the dns zone contains `netbox.` we assume `google_managed_zone` is a subdomain for netbox (ie `netbox.domain.local`) and will create a record just for `<google_managed_zone.domain>`. 
-When you have `disable_oidc_auth` set to `false` we will create a record for vouch-proxy for clients and okta to access and they are created like this `vouch.<google_managed_zone.domain>` if it's a `netbox.` subdomain. 
+When you have `disable_okta_auth` set to `false` we will create a record for vouch-proxy for clients and okta to access and they are created like this `vouch.<google_managed_zone.domain>` if it's a `netbox.` subdomain. 
 If it's not a subdomain it will create `vouch-netbox.<google_managed_zone.domain>` for vouch-proxy.
 
 For development environment, replace `netbox` with `netbox-user-<local.username>`

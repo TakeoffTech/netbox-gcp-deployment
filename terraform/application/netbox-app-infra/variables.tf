@@ -51,3 +51,9 @@ variable "okta_base_url" {
   type        = string
   default     = "oktapreview.com"
 }
+
+variable "okta_resource_prefix" {
+  description = "Prefix to add to Okta resources"
+  type        = string
+  default     = ""
+}
