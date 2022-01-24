@@ -35,7 +35,7 @@ locals {
     ]
 
     readonly_group    = one([for groupname in keys(okta_group.app_group): groupname if length(regexall("-readonly", groupname)) > 0])
-    readonly_group_id = lookup(okta_group.app_group["${local.readonly_group}"], "id", "unknown_grouo_id")
+    readonly_group_id = lookup(okta_group.app_group["${local.readonly_group}"], "id", "unknown_group_id")
 }
 
 resource "okta_group" "app_group" {

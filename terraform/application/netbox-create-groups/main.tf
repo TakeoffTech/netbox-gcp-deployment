@@ -27,9 +27,10 @@ variable "readonly_group" {
 
 provider "restapi" {
   alias                = "netbox"
-  uri                  = "https://netbox.takeofftech.org/api"
+  uri                  = "https://${var.netbox_host}/api"
   debug                = true
   write_returns_object = true
+  insecure             = true
 
   headers = {
     Authorization = "Token ${var.netbox_api_token}"
