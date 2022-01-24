@@ -43,6 +43,10 @@ output "okta_groups" {
   value = module.okta-netbox-app.groups
 }
 
+output "okta_groups_list" {
+  value = keys(module.okta-netbox-app.groups)
+}
+
 output "okta_superadmins_group" {
   value = one([for groupname in keys(module.okta-netbox-app.groups): groupname if length(regexall("-superadmins", groupname)) > 0])
 }

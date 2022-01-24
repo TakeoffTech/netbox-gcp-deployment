@@ -156,14 +156,6 @@ https://cloud.google.com/sdk/docs/install
 * this step is required if you want to setup a hostname to access netbox
 * [Create a public zone](https://cloud.google.com/dns/docs/zones#create-pub-zone)
 
-#### Install httpie and jq (optional)
-* in order to automatically create netbox groups and permission from the API we use httpie and jq to create those
-* Homebrew on Mac
-  ```sh
-  brew tap garden-io/garden
-  brew install httpie jq
-  ```
-
 ### Installation
 
 1. Clone the repo
