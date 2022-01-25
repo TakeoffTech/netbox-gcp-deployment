@@ -14,3 +14,7 @@ output "org_name" {
 output "base_url" {
   value = var.base_url
 }
+
+output "groups" {
+  value = okta_group.app_group
+}

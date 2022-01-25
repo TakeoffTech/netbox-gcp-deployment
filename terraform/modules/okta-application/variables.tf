@@ -39,3 +39,27 @@ variable "base_url" {
   type        = string
   default     = "oktapreview.com"
 }
+
+variable "resource_prefix" {
+  description = "Prefix to add to Okta resources"
+  type        = string
+  default     = ""
+}
+
+variable "application_groups" {
+  description = "List of okta groups to create for the application"
+  type = list(object({
+    basename    = string
+    description = string
+  }))
+  default = [ {
+    basename = "superadmins"
+    description = "Superadmin users (can modify permissions)"
+  },{
+    basename = "admins"
+    description = "Admin users (can CRUD all objects)"
+  }, {
+    basename = "readonly"
+    description = "ReadOnly users"
+  }  ]
+}

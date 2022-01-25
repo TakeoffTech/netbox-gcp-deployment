@@ -4,7 +4,7 @@ name: vouch-proxy
 repo: https://halkeye.github.io/helm-charts
 chart: vouch
 version: 3.0.1
-skipDeploy: ${var.disable_oidc_auth}
+skipDeploy: ${var.disable_okta_auth}
 serviceResource:
   kind: Deployment
   name: vouch-proxy

@@ -21,6 +21,8 @@ module "okta-netbox-app" {
   enable_auth = var.enable_auth
   org_name    = var.okta_org_name
 
+  resource_prefix = var.okta_resource_prefix
+
   name = var.namespace
 
   redirect_uris = [
