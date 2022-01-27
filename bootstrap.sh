@@ -6,6 +6,7 @@ terraform_bucket_target="google_storage_bucket.project_bucket"
 bucket_name="$1-state"
 google_project_id="$1"
 terraform_dir="$2"
+terraform_bucket_dir="$2/bucket"
 
 Help()
 {
@@ -21,11 +22,11 @@ Help()
 }
 
 function create_backend_tf {
-    cat <<EOF > $terraform_dir/backend.tf
+    cat <<EOF > $1/backend.tf
 terraform {
   backend "gcs" {
     bucket  = "$bucket_name"
-    prefix  = "netbox-infra/state"
+    prefix  = "$2/state"
   }
 }
 EOF
@@ -36,10 +37,10 @@ function validate_terraform {
 }
 
 function create_bucket_and_migrate_state {
-    $terraform -chdir=$terraform_dir init
-    $terraform -chdir=$terraform_dir apply -auto-approve -input=false -target=$terraform_bucket_target -var="project_id=$google_project_id"
-    create_backend_tf
-    $terraform -chdir=$terraform_dir init -migrate-state -force-copy
+    $terraform -chdir=$terraform_bucket_dir init
+    $terraform -chdir=$terraform_bucket_dir apply -auto-approve -input=false -var="project_id=$google_project_id"
+    create_backend_tf $terraform_bucket_dir "bucket"
+    $terraform -chdir=$terraform_bucket_dir init -migrate-state -force-copy
     echo "Successfully created state bucket and migrated terrform state to the bucket"
 }
 
@@ -53,7 +54,8 @@ fi
 created=$(gsutil ls -p ${google_project_id} | grep ${bucket_name} | wc -l)
 if [ ${created} == 0 ]; then
     create_bucket_and_migrate_state
+    # create backend.tf for infra
 else
-    echo "Bucket exsists and created backend.tf"
-    create_backend_tf
+    echo "Bucket exsists and created $terraform_dir/backend.tf"
 fi
+create_backend_tf $terraform_dir "netbox-infra"
