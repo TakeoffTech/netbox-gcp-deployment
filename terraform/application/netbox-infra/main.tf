@@ -19,8 +19,9 @@ data "google_storage_bucket" "project_bucket" {
 module "gke_autopilot" {
   source = "../../modules/gke-autopilot"
 
-  name   = local.cluster_name
-  region = var.region
+  project_id = var.project_id
+  name       = local.cluster_name
+  region     = var.region
 }
 
 module "postgresql-db" {
