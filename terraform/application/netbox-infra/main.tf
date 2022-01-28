@@ -12,7 +12,7 @@ resource "google_project_service" "default" {
 
 ##### get bucket data for terraform state
 data "google_storage_bucket" "project_bucket" {
-  name                        = "${var.project_id}-state"
+  name = "${var.project_id}-state"
 }
 
 ##### Deploy GKE autopilot cluster #####
