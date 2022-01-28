@@ -62,9 +62,7 @@ resource "null_resource" "kube_context" {
   depends_on = [module.gke_autopilot]
 
   triggers = {
-    cluster_name = local.cluster_name
-    project_id   = var.project_id
-    region       = var.region
+    always_run = "${timestamp()}"
   }
 
   provisioner "local-exec" {
