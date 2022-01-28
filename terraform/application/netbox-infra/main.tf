@@ -12,7 +12,7 @@ resource "google_project_service" "default" {
 
 ##### get bucket data for terraform state
 data "google_storage_bucket" "project_bucket" {
-  name                        = "${var.project_id}-state"
+  name = "${var.project_id}-state"
 }
 
 ##### Deploy GKE autopilot cluster #####
@@ -62,9 +62,7 @@ resource "null_resource" "kube_context" {
   depends_on = [module.gke_autopilot]
 
   triggers = {
-    cluster_name = local.cluster_name
-    project_id   = var.project_id
-    region       = var.region
+    always_run = "${timestamp()}"
   }
 
   provisioner "local-exec" {
