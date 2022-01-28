@@ -63,6 +63,9 @@ resource "null_resource" "kube_context" {
 
   triggers = {
     always_run = "${timestamp()}"
+    cluster_name = local.cluster_name
+    project_id   = var.project_id
+    region       = var.region
   }
 
   provisioner "local-exec" {
