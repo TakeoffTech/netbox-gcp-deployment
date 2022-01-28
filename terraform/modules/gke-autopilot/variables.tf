@@ -37,10 +37,15 @@ variable "firewall_inbound_ports" {
   default     = ["8443", "9443", "15017"]
 }
 
+variable "service_account" {
+  type        = string
+  description = "The service account to run nodes as if not overridden in `node_pools`. The create_service_account variable default value (true) will cause a cluster-specific service account to be created."
+  default     = "default"
+}
 variable "create_service_account" {
   type        = bool
   description = "Defines if service account specified to run nodes should be created."
-  default     = true
+  default     = false
 }
 
 variable "grant_registry_access" {
