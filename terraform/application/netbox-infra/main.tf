@@ -76,7 +76,7 @@ resource "null_resource" "kube_context" {
     when        = destroy
     interpreter = ["/bin/bash", "-c"]
     command     = <<-EOT
-      kubectl config delete-context gke_${self.triggers.project_id}_${self.triggers.region}_${self.triggers.cluster_name}
+      kubectl config delete-context gke_${self.triggers.project_id}_${self.triggers.region}_${self.triggers.cluster_name} || true
     EOT
   }
 }
