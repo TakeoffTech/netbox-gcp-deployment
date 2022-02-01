@@ -57,3 +57,9 @@ variable "okta_resource_prefix" {
   type        = string
   default     = ""
 }
+
+variable "okta_assignment_group_name" {
+  description = "Name of group to assign application to"
+  type        = string
+  default     = ""
+}

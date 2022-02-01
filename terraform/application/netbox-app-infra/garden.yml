@@ -12,6 +12,7 @@ variables:
   okta_org_name: ${var.okta_org_name}
   okta_base_url: ${var.okta_base_url}
   okta_resource_prefix: ${var.okta_name_prefix}
+  okta_assignment_group_name: ${var.okta_assignment_group_name}
 allowDestroy: true
 autoApply: true
 generateFiles:

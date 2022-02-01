@@ -34,4 +34,6 @@ module "okta-netbox-app" {
 
   base_url = var.okta_base_url
 
+  assignment_group_name = var.okta_assignment_group_name
+
 }
