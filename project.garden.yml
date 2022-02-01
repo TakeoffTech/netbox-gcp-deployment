@@ -10,6 +10,7 @@ variables:
   okta_org_name: ${local.env.OKTA_ORG_NAME || "replace-me-with-your-OKTA-org"}
   okta_base_url: ${local.env.OKTA_BASE_URL || "oktapreview.com"}
   okta_name_prefix: ${local.env.OKTA_NAME_PREFIX || ""} 
+  okta_assignment_group_name: ${local.env.OKTA_ASSIGNMENT_GROUP_NAME || "Everyone" }
   disable_okta_auth: ${local.env.DISABLE_OKTA_AUTH || true }
   cert_registration_email: ${local.env.CERT_REG_EMAIL || "user@example.com"}
 environments:

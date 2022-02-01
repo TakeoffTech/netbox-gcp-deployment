@@ -183,6 +183,7 @@ The current setup allows you to deploy netbox to empty gcp project.
 | okta\_org\_name | OKTA\_ORG\_NAME | Okta Org name | `""` | yes (if disable_okta_auth is false) |
 | okta\_base\_url | OKTA\_BASE\_URL | Okta base url | `"oktapreview.com"` | no |
 | okta\_name\_prefix | OKTA\_NAME\_PREFIX | Prefix to apply to all okta resources | `""` | no |
+| okta\_assignment\_group\_name | OKTA_ASSIGNMENT_GROUP_NAME | Group to assign to the application and add to the read-only group | "Everyone" | no |
 | (ENV only variable for the okta terraform provider) | OKTA\_API\_TOKEN | Okta API token | `""` | yes (if disable_okta_auth is false) |
 
 To set these variable before running `garden deploy` you have two options:
