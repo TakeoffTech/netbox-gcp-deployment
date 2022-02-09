@@ -16,7 +16,7 @@ variables:
 values:
   internalIPs: ['0.0.0.0']
   image:
-    tag: v3.1.6-1.5.1
+    tag: v3.1.7-1.5.1
   autoscaling:
     enabled: true
     minReplicas: "${environment.name == 'prod' ? 2 : 1}"

@@ -8,7 +8,7 @@ metadata:
     helm.sh/chart: netbox-4.0.1
     app.kubernetes.io/name: netbox
     app.kubernetes.io/instance: netbox
-    app.kubernetes.io/version: "v3.1.6-1.5.1"
+    app.kubernetes.io/version: "v3.1.7-1.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: housekeeping
 spec:
@@ -23,7 +23,7 @@ spec:
         helm.sh/chart: netbox-4.0.1
         app.kubernetes.io/name: netbox
         app.kubernetes.io/instance: netbox
-        app.kubernetes.io/version: "v3.1.6-1.5.1"
+        app.kubernetes.io/version: "v3.1.7-1.5.1"
         app.kubernetes.io/managed-by: Helm
     spec:
       template:
@@ -58,7 +58,7 @@ spec:
                 runAsGroup: 1000
                 runAsNonRoot: true
                 runAsUser: 1000
-              image: "netboxcommunity/netbox:v3.1.6-1.5.1"
+              image: "netboxcommunity/netbox:v3.1.7-1.5.1"
               command:
                 - /kubexit/kubexit
                 - /opt/netbox/venv/bin/python
