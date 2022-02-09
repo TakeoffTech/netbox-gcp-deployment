@@ -8,7 +8,7 @@ metadata:
     helm.sh/chart: netbox-4.0.1
     app.kubernetes.io/name: netbox
     app.kubernetes.io/instance: netbox
-    app.kubernetes.io/version: "v3.1-1.5.1"
+    app.kubernetes.io/version: "v3.1.6-1.5.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: housekeeping
 spec:
@@ -23,7 +23,7 @@ spec:
         helm.sh/chart: netbox-4.0.1
         app.kubernetes.io/name: netbox
         app.kubernetes.io/instance: netbox
-        app.kubernetes.io/version: "v3.1-1.5.1"
+        app.kubernetes.io/version: "v3.1.6-1.5.1"
         app.kubernetes.io/managed-by: Helm
     spec:
       template:
@@ -37,6 +37,17 @@ spec:
           securityContext:
             fsGroup: 1000
             runAsNonRoot: true
+          initContainers:
+            - name: kubexit
+              image: karlkfi/kubexit:latest
+              command: ['cp', '/bin/kubexit', '/kubexit/kubexit']
+              securityContext:
+                runAsGroup: 1000
+                runAsNonRoot: true
+                runAsUser: 1000
+              volumeMounts:
+              - mountPath: /kubexit
+                name: kubexit
           containers:
             - name: netbox-housekeeping
               securityContext:
@@ -47,12 +58,28 @@ spec:
                 runAsGroup: 1000
                 runAsNonRoot: true
                 runAsUser: 1000
-              image: "netboxcommunity/netbox:v3.1-1.5.1"
+              image: "netboxcommunity/netbox:v3.1.6-1.5.1"
               command:
+                - /kubexit/kubexit
                 - /opt/netbox/venv/bin/python
                 - /opt/netbox/netbox/manage.py
                 - housekeeping
               imagePullPolicy: IfNotPresent
+              env:
+              - name: KUBEXIT_NAME
+                value: netbox-housekeeping
+              - name: KUBEXIT_GRAVEYARD
+                value: /graveyard
+              - name: KUBEXIT_BIRTH_DEPS
+                value: cloud-sql-proxy
+              - name: KUBEXIT_POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: KUBEXIT_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
               volumeMounts:
                 - name: config
                   mountPath: /etc/netbox/config/configuration.py
@@ -69,6 +96,12 @@ spec:
                 - name: media
                   mountPath: /opt/netbox/netbox/media
                   subPath: ""
+                - mountPath: /graveyard
+                  name: graveyard
+                - mountPath: /kubexit
+                  name: kubexit
+                - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                  name: kube-api-access
               resources:
                 limits:
                   cpu: 500m
@@ -76,7 +109,47 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 512Mi
+            - command:
+              - /kubexit/kubexit
+              - /cloud_sql_proxy
+              - -instances=$(CONNECTION_NAME)=tcp:5432
+              env:
+              - name: CONNECTION_NAME
+                valueFrom:
+                  secretKeyRef:
+                    key: connection_name
+                    name: cloudsql-instance
+              - name: KUBEXIT_NAME
+                value: cloud-sql-proxy
+              - name: KUBEXIT_GRAVEYARD
+                value: /graveyard
+              - name: KUBEXIT_DEATH_DEPS
+                value: netbox-housekeeping
+              image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+              name: cloud-sql-proxy
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+              securityContext:
+                runAsNonRoot: true
+              volumeMounts:
+              - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                name: kube-api-access
+              - mountPath: /graveyard
+                name: graveyard
+              - mountPath: /kubexit
+                name: kubexit
+              lifecycle:
+                preStop:
+                  exec:
+                    command: ['sleep', '10']
           volumes:
+            - name: graveyard
+              emptyDir:
+                medium: Memory
+            - name: kubexit
+              emptyDir: {}
             - name: config
               configMap:
                 name: netbox
@@ -113,4 +186,22 @@ spec:
                 medium: Memory
             - name: media
               emptyDir: {}
+            - name: kube-api-access
+              projected:
+                defaultMode: 420 # 0644
+                sources:
+                  - serviceAccountToken:
+                      expirationSeconds: 3607
+                      path: token
+                  - configMap:
+                      items:
+                        - key: ca.crt
+                          path: ca.crt
+                      name: kube-root-ca.crt
+                  - downwardAPI:
+                      items:
+                        - fieldRef:
+                            apiVersion: v1
+                            fieldPath: metadata.namespace
+                          path: namespace
           restartPolicy: OnFailure

@@ -78,7 +78,7 @@ values:
       enabled: true
   extraContainers:
   - name: cloud-sql-proxy
-    image: gcr.io/cloudsql-docker/gce-proxy:1.27.0
+    image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
     env:
       - name: CONNECTION_NAME
         valueFrom:
@@ -94,6 +94,8 @@ values:
       requests:
         memory: "256Mi"
         cpu:    "200m"
+  releaseCheck:
+    url: https://api.github.com/repos/netbox-community/netbox/releases
   housekeeping:
     enabled: false
     resources:
@@ -103,6 +105,24 @@ values:
       requests:
         cpu: 500m
         memory: 512Mi
+    extraContainers:
+    - name: cloud-sql-proxy
+      image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+      env:
+        - name: CONNECTION_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-instance
+              key: connection_name
+      command:
+        - "/cloud_sql_proxy"
+        - "-instances=$(CONNECTION_NAME)=tcp:5432"
+      securityContext:
+        runAsNonRoot: true
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu:    "200m"
   redis:
     enabled: false
   tasksRedis:
@@ -120,4 +140,5 @@ description: Netbox Housekeeping cronjob deployment - hack
 dependencies:
   - netbox
 files:
+  - rbac.yaml
   - netbox-housekeeping-cronjob.yaml
