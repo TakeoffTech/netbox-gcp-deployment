@@ -26,7 +26,7 @@ module "gke_autopilot" {
 
 module "postgresql-db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
-  version              = "8.0.0"
+  version              = "9.0.0"
   name                 = "netbox-postgresql"
   random_instance_name = true
   database_version     = "POSTGRES_13"
@@ -38,6 +38,8 @@ module "postgresql-db" {
 
   deletion_protection = false
   create_timeout      = "30m"
+  enable_default_db    = false
+  enable_default_user  = false
 
   ip_configuration = {
     ipv4_enabled        = true

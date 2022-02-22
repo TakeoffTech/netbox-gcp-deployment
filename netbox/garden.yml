@@ -16,7 +16,8 @@ variables:
 values:
   internalIPs: ['0.0.0.0']
   image:
-    tag: v3.1.7-1.5.1
+    repository: quay.io/netboxcommunity/netbox
+    tag: ${var.netbox_version}
   autoscaling:
     enabled: true
     minReplicas: "${environment.name == 'prod' ? 2 : 1}"
