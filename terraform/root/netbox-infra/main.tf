@@ -16,17 +16,18 @@ data "google_storage_bucket" "project_bucket" {
 }
 
 ##### Deploy GKE autopilot cluster #####
-module "gke_autopilot" {
-  source = "../../modules/gke-autopilot"
+# module "gke_autopilot" {
+#   source = "../../modules/gke-autopilot"
 
-  project_id = var.project_id
-  name       = local.cluster_name
-  region     = var.region
-}
+#   project_id = var.project_id
+#   name       = local.cluster_name
+#   region     = var.region
+# }
+
 
 module "postgresql-db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
-  version              = "9.0.0"
+  version              = "10.0.1"
   name                 = "netbox-postgresql"
   random_instance_name = true
   database_version     = "POSTGRES_13"
@@ -34,7 +35,7 @@ module "postgresql-db" {
   availability_type    = "REGIONAL"
   region               = var.region
   zone                 = "${var.region}-a"
-  tier                 = "db-f1-micro"
+  tier                 = "db-custom-1-3840"
 
   deletion_protection = false
   create_timeout      = "30m"
@@ -42,12 +43,22 @@ module "postgresql-db" {
   enable_default_user  = false
 
   ip_configuration = {
+    allocated_ip_range  = null
     ipv4_enabled        = true
     private_network     = null
     require_ssl         = true
     authorized_networks = []
   }
 
+  backup_configuration = {
+    enabled                        = true
+    start_time                     = "22:50"
+    location                       = null
+    point_in_time_recovery_enabled = true
+    transaction_log_retention_days = null
+    retained_backups               = 90
+    retention_unit                 = "COUNT"
+  }
 }
 
 module "app-infra" {

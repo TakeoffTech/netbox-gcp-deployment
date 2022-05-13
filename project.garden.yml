@@ -4,7 +4,7 @@ variables:
   base_envname: ${slice((local.env.CI_REF_NAME_SLUG || replace(local.username, ".", "-")), '0', '11')}
   google_project_id: ${local.env.GOOGLE_PROJECT || "replace-me-with-your-project-id"}
   google_compute_region: ${local.env.GOOGLE_REGION || "us-central1"}
-  terraform_root: "./terraform/application/netbox-infra"
+  terraform_root: "./terraform/root/netbox-infra"
   google_dns_project_id: ${local.env.GOOGLE_DNS_PROJECT || ""}
   google_managed_zone: ${local.env.MANAGED_ZONE || "replace-me-with-your-managed-zone-name"}
   okta_org_name: ${local.env.OKTA_ORG_NAME || "replace-me-with-your-OKTA-org"}
@@ -13,7 +13,7 @@ variables:
   okta_assignment_group_name: ${local.env.OKTA_ASSIGNMENT_GROUP_NAME || "Everyone" }
   disable_okta_auth: ${local.env.DISABLE_OKTA_AUTH || true }
   cert_registration_email: ${local.env.CERT_REG_EMAIL || "user@example.com"}
-  netbox_version: ${local.env.NETBOX_VERSION || "v3.1.8"} 
+  netbox_version: ${local.env.NETBOX_VERSION || "v3.2.2"} 
 environments:
   - name: dev
     defaultNamespace: user-${var.base_envname}
