@@ -16,14 +16,13 @@ data "google_storage_bucket" "project_bucket" {
 }
 
 ##### Deploy GKE autopilot cluster #####
-# module "gke_autopilot" {
-#   source = "../../modules/gke-autopilot"
+module "gke_autopilot" {
+  source = "../../modules/gke-autopilot"
 
-#   project_id = var.project_id
-#   name       = local.cluster_name
-#   region     = var.region
-# }
-
+  project_id = var.project_id
+  name       = local.cluster_name
+  region     = var.region
+}
 
 module "postgresql-db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
@@ -76,7 +75,7 @@ resource "null_resource" "kube_context" {
 
   triggers = {
     always_run = "${timestamp()}"
-    cluster_name = local.cluster_name
+    cluster_name = module.gke_autopilot.cluster_id
     project_id   = var.project_id
     region       = var.region
   }

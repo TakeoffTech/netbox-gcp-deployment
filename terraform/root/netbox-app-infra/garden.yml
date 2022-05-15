@@ -5,6 +5,7 @@ variables:
   project_id: ${var.google_project_id}
   region: ${var.google_compute_region}
   namespace: ${providers.kubernetes.outputs.app-namespace}
+  gke_cluster_name: ${providers.terraform.outputs.cluster_name}
   cloudsql_instance_name: ${providers.terraform.outputs.cloudsql_instance_name}
   dns_project_id: ${var.google_dns_project_id}
   managed_zone: ${var.google_managed_zone}

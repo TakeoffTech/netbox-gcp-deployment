@@ -35,7 +35,7 @@ providers:
       region: ${var.google_compute_region}
       gcloud_get_credentials: true
   - name: kubernetes
-    context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_id}
+    context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_name}
     environments:
       - dev
     imagePullSecrets:
@@ -47,7 +47,7 @@ providers:
     dependencies:
       - terraform
   - name: kubernetes
-    context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_id}
+    context: gke_${var.google_project_id}_${var.google_compute_region}_${providers.terraform.outputs.cluster_name}
     namespace: netbox
     deploymentRegistry:
       hostname: ${var.google_compute_region}-docker.pkg.dev
