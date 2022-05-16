@@ -51,3 +51,9 @@ variable "create_vouch_record" {
   type        = bool
   default     = true
 }
+
+variable "network_name" {
+  description = "The VPC name to allow connections to memstore"
+  type        = string
+  default     = "gke-network"
+}

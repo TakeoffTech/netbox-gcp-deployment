@@ -6,6 +6,10 @@ output "cluster_name" {
   value = module.gke_autopilot.cluster_name
 }
 
+output "network_name" {
+  value = module.gke_autopilot.network_name
+}
+
 output "cloudsql_instance_name" {
   value = module.postgresql-db.instance_name
 }

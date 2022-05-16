@@ -5,3 +5,7 @@ output "cluster_name" {
 output "cluster_id" {
   value = module.gke.cluster_id
 }
+
+output "network_name" {
+  value = module.gcp-network.network_name
+}

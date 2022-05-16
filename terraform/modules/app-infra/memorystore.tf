@@ -1,7 +1,3 @@
-locals {
-  network_name = "${var.gke_cluster_name}-vpc"
-}
-
 module "memorystore" {
   source  = "terraform-google-modules/memorystore/google"
   version = "~> 4.3"
@@ -14,5 +10,5 @@ module "memorystore" {
 }
 
 data "google_compute_network" "redis-network" {
-  name = local.network_name
+  name = var.network_name
 }

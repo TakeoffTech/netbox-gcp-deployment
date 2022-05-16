@@ -64,6 +64,8 @@ module "app-infra" {
   count  = var.gcloud_get_credentials ? 0 : 1
   source = "../../modules/app-infra"
 
+  gke_cluster_name       = module.gke_autopilot.cluster_name
+  network_name           = module.gke_autopilot.network_name 
   project_id             = var.project_id
   region                 = var.region
   cloudsql_instance_name = module.postgresql-db.instance_name

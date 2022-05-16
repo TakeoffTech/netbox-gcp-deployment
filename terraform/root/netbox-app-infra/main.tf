@@ -7,6 +7,8 @@ module "app-infra" {
   cloudsql_instance_name = var.cloudsql_instance_name
   namespace              = var.namespace
 
+  gke_cluster_name    = var.gke_cluster_name
+  network_name        = var.network_name
   dns_project_id      = var.dns_project_id
   managed_zone        = var.managed_zone
   create_vouch_record = var.enable_auth
