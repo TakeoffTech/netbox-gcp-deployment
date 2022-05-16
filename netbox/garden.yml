@@ -69,6 +69,7 @@ values:
     GS_BUCKET_NAME: ${runtime.services.netbox-app-infra.outputs.bucket.name}
     GS_DEFAULT_ACL: publicRead
     GS_QUERYSTRING_AUTH: true
+  metricsEnabled: true
   persistence:
     enabled: false
   serviceAccount:
