@@ -28,6 +28,7 @@ variable "google_apis" {
     // GKE + compute
     "compute.googleapis.com",
     "container.googleapis.com",
+    "logging.googleapis.com",
 
     // storage
     "storage-component.googleapis.com",
