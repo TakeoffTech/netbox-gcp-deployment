@@ -29,6 +29,7 @@ variable "google_apis" {
     "compute.googleapis.com",
     "container.googleapis.com",
     "logging.googleapis.com",
+    "monitoring.googleapis.com",
 
     // storage
     "storage-component.googleapis.com",
