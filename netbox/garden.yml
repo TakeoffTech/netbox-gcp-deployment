@@ -5,7 +5,7 @@ name: netbox
 repo: https://charts.boo.tc
 chart: netbox
 version: 4.0.1
-timeout: 600
+timeout: 1200
 dependencies:
   - netbox-app-infra
   - netbox-secrets
