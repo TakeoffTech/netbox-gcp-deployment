@@ -12,6 +12,12 @@ variable "gke_cluster_name" {
   default = "gke"
 }
 
+variable "network_name" {
+  description = "The VPC name to allow connections to memstore"
+  type        = string
+  default     = "gke-network"
+}
+
 variable "cloudsql_instance_name" {
   type = string
 }

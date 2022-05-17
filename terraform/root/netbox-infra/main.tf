@@ -26,7 +26,7 @@ module "gke_autopilot" {
 
 module "postgresql-db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
-  version              = "9.0.0"
+  version              = "10.0.1"
   name                 = "netbox-postgresql"
   random_instance_name = true
   database_version     = "POSTGRES_13"
@@ -34,7 +34,7 @@ module "postgresql-db" {
   availability_type    = "REGIONAL"
   region               = var.region
   zone                 = "${var.region}-a"
-  tier                 = "db-f1-micro"
+  tier                 = "db-custom-1-3840"
 
   deletion_protection = false
   create_timeout      = "30m"
@@ -42,18 +42,30 @@ module "postgresql-db" {
   enable_default_user  = false
 
   ip_configuration = {
+    allocated_ip_range  = null
     ipv4_enabled        = true
     private_network     = null
     require_ssl         = true
     authorized_networks = []
   }
 
+  backup_configuration = {
+    enabled                        = true
+    start_time                     = "22:50"
+    location                       = null
+    point_in_time_recovery_enabled = true
+    transaction_log_retention_days = null
+    retained_backups               = 90
+    retention_unit                 = "COUNT"
+  }
 }
 
 module "app-infra" {
   count  = var.gcloud_get_credentials ? 0 : 1
   source = "../../modules/app-infra"
 
+  gke_cluster_name       = module.gke_autopilot.cluster_name
+  network_name           = module.gke_autopilot.network_name 
   project_id             = var.project_id
   region                 = var.region
   cloudsql_instance_name = module.postgresql-db.instance_name
@@ -65,7 +77,7 @@ resource "null_resource" "kube_context" {
 
   triggers = {
     always_run = "${timestamp()}"
-    cluster_name = local.cluster_name
+    cluster_name = module.gke_autopilot.cluster_id
     project_id   = var.project_id
     region       = var.region
   }

@@ -1,5 +1,13 @@
 output "cluster_id" {
-  value = split("/", module.gke_autopilot.cluster.id)[5]
+  value = module.gke_autopilot.cluster_id
+}
+
+output "cluster_name" {
+  value = module.gke_autopilot.cluster_name
+}
+
+output "network_name" {
+  value = module.gke_autopilot.network_name
 }
 
 output "cloudsql_instance_name" {
