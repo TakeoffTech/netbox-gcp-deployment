@@ -26,7 +26,7 @@ module "gke_autopilot" {
 
 module "postgresql-db" {
   source               = "GoogleCloudPlatform/sql-db/google//modules/postgresql"
-  version              = "10.0.1"
+  version              = "10.0.2"
   name                 = "netbox-postgresql"
   random_instance_name = true
   database_version     = "POSTGRES_13"
