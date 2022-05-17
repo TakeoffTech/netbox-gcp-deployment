@@ -1,5 +1,15 @@
 {
+  "enabled": true,
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dashboard",
   "extends": [
     "config:base"
-  ]
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^project.garden.yml$"],
+      "matchStrings": ["netbox_version: \\${local.env.NETBOX_VERSION \\|\\| \"(?<currentValue>.*?)\"} # renovate: depName=(?<depName>.*?)\\n"],
+      "datasourceTemplate": "github-releases"
+    }
+  ],
 }
