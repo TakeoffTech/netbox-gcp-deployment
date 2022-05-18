@@ -11,5 +11,5 @@
       "matchStrings": ["netbox_version: \\${local.env.NETBOX_VERSION \\|\\| \"(?<currentValue>.*?)\"} # renovate: depName=(?<depName>.*?)\\n"],
       "datasourceTemplate": "github-releases"
     }
-  ],
+  ]
 }
