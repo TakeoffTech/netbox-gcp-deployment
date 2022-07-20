@@ -13,7 +13,7 @@ variables:
   okta_assignment_group_name: ${local.env.OKTA_ASSIGNMENT_GROUP_NAME || "Everyone" }
   disable_okta_auth: ${local.env.DISABLE_OKTA_AUTH || true }
   cert_registration_email: ${local.env.CERT_REG_EMAIL || "user@example.com"}
-  netbox_version: ${local.env.NETBOX_VERSION || "v3.2.6"} # renovate: depName=netbox-community/netbox
+  netbox_version: ${local.env.NETBOX_VERSION || "v3.2.7"} # renovate: depName=netbox-community/netbox
 environments:
   - name: dev
     defaultNamespace: user-${var.base_envname}
