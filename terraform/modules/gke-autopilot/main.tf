@@ -35,13 +35,13 @@ module "gke" {
   enable_private_nodes            = true
   master_ipv4_cidr_block          = var.master_ipv4_cidr_block
   datapath_provider               = var.enable_dataplane_v2 ? "ADVANCED_DATAPATH" : "DATAPATH_PROVIDER_UNSPECIFIED"
-  
+
   add_master_webhook_firewall_rules = true
 
   master_authorized_networks = [
     {
-      cidr_block     = "0.0.0.0/0"
-      display_name   = "public"
+      cidr_block   = "0.0.0.0/0"
+      display_name = "public"
     }
   ]
 }

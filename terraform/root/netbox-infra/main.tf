@@ -38,8 +38,8 @@ module "postgresql-db" {
 
   deletion_protection = false
   create_timeout      = "30m"
-  enable_default_db    = false
-  enable_default_user  = false
+  enable_default_db   = false
+  enable_default_user = false
 
   ip_configuration = {
     allocated_ip_range  = null
@@ -65,7 +65,7 @@ module "app-infra" {
   source = "../../modules/app-infra"
 
   gke_cluster_name       = module.gke_autopilot.cluster_name
-  network_name           = module.gke_autopilot.network_name 
+  network_name           = module.gke_autopilot.network_name
   project_id             = var.project_id
   region                 = var.region
   cloudsql_instance_name = module.postgresql-db.instance_name
@@ -76,7 +76,7 @@ resource "null_resource" "kube_context" {
   depends_on = [module.gke_autopilot]
 
   triggers = {
-    always_run = "${timestamp()}"
+    always_run   = "${timestamp()}"
     cluster_name = module.gke_autopilot.cluster_id
     project_id   = var.project_id
     region       = var.region

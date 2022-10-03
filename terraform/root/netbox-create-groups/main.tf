@@ -8,11 +8,11 @@ terraform {
 }
 
 variable "netbox_host" {
-  type    = string
+  type = string
 }
 
 variable "netbox_api_token" {
-  type    = string
+  type = string
 }
 
 variable "groups" {
