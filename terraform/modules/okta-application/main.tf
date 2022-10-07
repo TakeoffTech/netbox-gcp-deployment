@@ -14,7 +14,7 @@ resource "okta_app_oauth" "netbox" {
     value       = "${var.resource_prefix}${var.name}"
   }
   lifecycle {
-    ignore_changes = [groups, users_excluded]
+    ignore_changes = [groups]
   }
 }
 
