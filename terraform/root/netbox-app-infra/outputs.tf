@@ -48,14 +48,14 @@ output "okta_groups_list" {
 }
 
 output "okta_superadmins_group" {
-  value = one([for groupname in keys(module.okta-netbox-app.groups): groupname if length(regexall("-superadmins", groupname)) > 0])
+  value = one([for groupname in keys(module.okta-netbox-app.groups) : groupname if length(regexall("-superadmins", groupname)) > 0])
 }
 
 output "okta_admins_group" {
-  value = one([for groupname in keys(module.okta-netbox-app.groups): groupname if length(regexall("-admins", groupname)) > 0])
+  value = one([for groupname in keys(module.okta-netbox-app.groups) : groupname if length(regexall("-admins", groupname)) > 0])
 }
 
 output "okta_readonly_group" {
-  value = one([for groupname in keys(module.okta-netbox-app.groups): groupname if length(regexall("-readonly", groupname)) > 0])
+  value = one([for groupname in keys(module.okta-netbox-app.groups) : groupname if length(regexall("-readonly", groupname)) > 0])
 }
 

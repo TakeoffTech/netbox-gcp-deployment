@@ -6,8 +6,8 @@ variable "name" {
 
 variable "enable_auth" {
   description = "Enable creating okta application"
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 
 variable "redirect_uris" {
@@ -52,14 +52,14 @@ variable "application_groups" {
     basename    = string
     description = string
   }))
-  default = [ {
-    basename = "superadmins"
+  default = [{
+    basename    = "superadmins"
     description = "Superadmin users (can modify permissions)"
-  },{
-    basename = "admins"
+    }, {
+    basename    = "admins"
     description = "Admin users (can CRUD all objects)"
-  }, {
-    basename = "readonly"
+    }, {
+    basename    = "readonly"
     description = "ReadOnly users"
-  }  ]
+  }]
 }
