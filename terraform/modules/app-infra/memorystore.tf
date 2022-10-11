@@ -1,6 +1,6 @@
 module "memorystore" {
   source  = "terraform-google-modules/memorystore/google"
-  version = "~> 5.0"
+  version = "~> 6.0"
 
   name    = "netbox-memorystore"
   project = var.project_id
