@@ -10,6 +10,13 @@
       "fileMatch": ["^project.garden.yml$"],
       "matchStrings": ["netbox_version: \\${local.env.NETBOX_VERSION \\|\\| \"(?<currentValue>.*?)\"} # renovate: depName=(?<depName>.*?)\\n"],
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "fileMatch": ["^garden.yml$"],
+      "matchStrings": [
+          "type: helm\n.*\n.*repo: (?<registryUrl>.*?)\n.*chart: (?<depName>.*?)\n.*version: (?<currentValue>.*)\n"
+      ],
+      "datasourceTemplate": "helm"
     }
   ]
 }
