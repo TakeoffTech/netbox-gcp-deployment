@@ -12,7 +12,7 @@
       "datasourceTemplate": "github-releases"
     },
     {
-      "fileMatch": ["^garden.yml$"],
+      "fileMatch": ["(^|/)garden.yml$"],
       "matchStrings": [
           "type: helm\n.*\n.*repo: (?<registryUrl>.*?)\n.*chart: (?<depName>.*?)\n.*version: (?<currentValue>.*)\n"
       ],
