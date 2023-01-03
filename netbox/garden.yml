@@ -4,7 +4,7 @@ type: helm
 name: netbox
 repo: https://charts.boo.tc
 chart: netbox
-version: 4.0.1
+version: 4.1.1
 timeout: 1200
 dependencies:
   - netbox-app-infra
