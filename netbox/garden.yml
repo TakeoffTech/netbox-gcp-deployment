@@ -2,9 +2,7 @@
 kind: Module
 type: helm
 name: netbox
-repo: https://charts.boo.tc
-chart: netbox
-version: 4.1.1
+repositoryUrl: https://github.com/bootc/netbox-chart#develop
 timeout: 1200
 dependencies:
   - netbox-app-infra
