@@ -2,9 +2,7 @@
 kind: Module
 type: helm
 name: netbox
-repo: https://charts.boo.tc
-chart: netbox
-version: 4.1.1
+repositoryUrl: https://github.com/bootc/netbox-chart#develop
 timeout: 1200
 dependencies:
   - netbox-app-infra
@@ -19,7 +17,7 @@ values:
     repository: quay.io/netboxcommunity/netbox
     tag: ${var.netbox_version}
   autoscaling:
-    enabled: true
+    enabled: false
     minReplicas: "${environment.name == 'prod' ? 2 : 1}"
     maxReplicas: 10
   superuser:
@@ -77,7 +75,7 @@ values:
     name: ${providers.kubernetes.outputs.app-namespace}
   worker:
     autoscaling:
-      enabled: true
+      enabled: false
   extraContainers:
   - name: cloud-sql-proxy
     image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
@@ -99,14 +97,7 @@ values:
   releaseCheck:
     url: https://api.github.com/repos/netbox-community/netbox/releases
   housekeeping:
-    enabled: false
-    resources:
-      limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 500m
-        memory: 512Mi
+    enabled: true
     extraContainers:
     - name: cloud-sql-proxy
       image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
@@ -133,14 +124,3 @@ values:
   cachingRedis:
     host: ${runtime.services.netbox-app-infra.outputs.redis_host}
     port: 6379
----
-kind: Module
-type: kubernetes
-name: netbox-housekeeping
-# helm install above fails when housekeeping is on with: admission webhook "workload-defaulter.common-webhooks.networking.gke.io" denied the request: no kind "CronJob" is registered for version "batch/v1" in scheme "pkg/runtime/scheme.go:100"
-description: Netbox Housekeeping cronjob deployment - hack
-dependencies:
-  - netbox
-files:
-  - rbac.yaml
-  - netbox-housekeeping-cronjob.yaml
