@@ -2,7 +2,7 @@ terraform {
   required_providers {
     restapi = {
       source  = "KirillMeleshko/restapi"
-      version = "1.17.0"
+      version = "1.18.2"
     }
   }
 }
