@@ -76,6 +76,23 @@ values:
   worker:
     autoscaling:
       enabled: true
+    extraContainers:
+    - name: cloud-sql-proxy
+      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
+      env:
+        - name: CSQL_PROXY_INSTANCE_CONNECTION_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-instance
+              key: connection_name
+      args:
+        - "--structured-logs"
+      securityContext:
+        runAsNonRoot: true
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu:    "200m"
   extraContainers:
   - name: cloud-sql-proxy
     image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
