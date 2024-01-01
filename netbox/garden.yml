@@ -2,7 +2,7 @@
 kind: Module
 type: helm
 name: netbox
-repositoryUrl: https://github.com/bootc/netbox-chart#develop
+repositoryUrl: https://github.com/scheuk/netbox-chart#develop
 timeout: 1200
 dependencies:
   - netbox-app-infra
@@ -17,7 +17,7 @@ values:
     repository: quay.io/netboxcommunity/netbox
     tag: ${var.netbox_version}
   autoscaling:
-    enabled: false
+    enabled: true
     minReplicas: "${environment.name == 'prod' ? 2 : 1}"
     maxReplicas: 10
   superuser:
@@ -75,19 +75,18 @@ values:
     name: ${providers.kubernetes.outputs.app-namespace}
   worker:
     autoscaling:
-      enabled: false
+      enabled: true
   extraContainers:
   - name: cloud-sql-proxy
-    image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
     env:
-      - name: CONNECTION_NAME
+      - name: CSQL_PROXY_INSTANCE_CONNECTION_NAME
         valueFrom:
           secretKeyRef:
             name: cloudsql-instance
             key: connection_name
-    command:
-      - "/cloud_sql_proxy"
-      - "-instances=$(CONNECTION_NAME)=tcp:5432"
+    args:
+      - "--structured-logs"
     securityContext:
       runAsNonRoot: true
     resources:
@@ -100,16 +99,15 @@ values:
     enabled: true
     extraContainers:
     - name: cloud-sql-proxy
-      image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
       env:
-        - name: CONNECTION_NAME
+        - name: CSQL_PROXY_INSTANCE_CONNECTION_NAME
           valueFrom:
             secretKeyRef:
               name: cloudsql-instance
               key: connection_name
-      command:
-        - "/cloud_sql_proxy"
-        - "-instances=$(CONNECTION_NAME)=tcp:5432"
+      args:
+        - "--structured-logs"
       securityContext:
         runAsNonRoot: true
       resources:

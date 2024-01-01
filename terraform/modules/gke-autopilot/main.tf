@@ -34,7 +34,6 @@ module "gke" {
   enable_private_endpoint         = false
   enable_private_nodes            = true
   master_ipv4_cidr_block          = var.master_ipv4_cidr_block
-  datapath_provider               = var.enable_dataplane_v2 ? "ADVANCED_DATAPATH" : "DATAPATH_PROVIDER_UNSPECIFIED"
 
   add_master_webhook_firewall_rules = true
 
