@@ -16,7 +16,7 @@
 
 module "gcp-network" {
   source  = "terraform-google-modules/network/google"
-  version = "< 8.0.0"
+  version = "~> 8.1.0"
 
   project_id   = var.project_id
   network_name = local.network_name
@@ -50,7 +50,7 @@ module "gcp-network" {
 
 module "cloud-router" {
   source  = "terraform-google-modules/cloud-router/google"
-  version = "~> 5.0"
+  version = "~> 6.0"
   project = var.project_id
   name    = local.router_name
   network = module.gcp-network.network_name

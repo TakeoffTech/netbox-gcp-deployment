@@ -2,9 +2,7 @@
 kind: Module
 type: helm
 name: netbox
-repo: https://charts.boo.tc
-chart: netbox
-version: 4.1.1
+repositoryUrl: https://github.com/scheuk/netbox-chart#develop
 timeout: 1200
 dependencies:
   - netbox-app-infra
@@ -78,18 +76,34 @@ values:
   worker:
     autoscaling:
       enabled: true
+    extraContainers:
+    - name: cloud-sql-proxy
+      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
+      env:
+        - name: CSQL_PROXY_INSTANCE_CONNECTION_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cloudsql-instance
+              key: connection_name
+      args:
+        - "--structured-logs"
+      securityContext:
+        runAsNonRoot: true
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu:    "200m"
   extraContainers:
   - name: cloud-sql-proxy
-    image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
     env:
-      - name: CONNECTION_NAME
+      - name: CSQL_PROXY_INSTANCE_CONNECTION_NAME
         valueFrom:
           secretKeyRef:
             name: cloudsql-instance
             key: connection_name
-    command:
-      - "/cloud_sql_proxy"
-      - "-instances=$(CONNECTION_NAME)=tcp:5432"
+    args:
+      - "--structured-logs"
     securityContext:
       runAsNonRoot: true
     resources:
@@ -99,26 +113,18 @@ values:
   releaseCheck:
     url: https://api.github.com/repos/netbox-community/netbox/releases
   housekeeping:
-    enabled: false
-    resources:
-      limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 500m
-        memory: 512Mi
+    enabled: true
     extraContainers:
     - name: cloud-sql-proxy
-      image: gcr.io/cloudsql-docker/gce-proxy:1.28.0
+      image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.1
       env:
-        - name: CONNECTION_NAME
+        - name: CSQL_PROXY_INSTANCE_CONNECTION_NAME
           valueFrom:
             secretKeyRef:
               name: cloudsql-instance
               key: connection_name
-      command:
-        - "/cloud_sql_proxy"
-        - "-instances=$(CONNECTION_NAME)=tcp:5432"
+      args:
+        - "--structured-logs"
       securityContext:
         runAsNonRoot: true
       resources:
@@ -133,14 +139,3 @@ values:
   cachingRedis:
     host: ${runtime.services.netbox-app-infra.outputs.redis_host}
     port: 6379
----
-kind: Module
-type: kubernetes
-name: netbox-housekeeping
-# helm install above fails when housekeeping is on with: admission webhook "workload-defaulter.common-webhooks.networking.gke.io" denied the request: no kind "CronJob" is registered for version "batch/v1" in scheme "pkg/runtime/scheme.go:100"
-description: Netbox Housekeeping cronjob deployment - hack
-dependencies:
-  - netbox
-files:
-  - rbac.yaml
-  - netbox-housekeeping-cronjob.yaml
