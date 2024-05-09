@@ -6,7 +6,7 @@ resource "random_id" "suffix" {
 
 module "bucket" {
   source  = "terraform-google-modules/cloud-storage/google//modules/simple_bucket"
-  version = "~> 4.0"
+  version = "~> 6.0"
 
   name               = "${local.name}-media-${random_id.suffix[0].hex}"
   project_id         = var.project_id
